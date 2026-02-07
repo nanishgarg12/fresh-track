@@ -7,30 +7,46 @@
 </head>
 <body>
 
+<!-- ================= LOGIN PAGE ================= -->
 <div id="loginPage" class="login-card">
     <h1>FreshTrack</h1>
     <p class="subtitle">Smart Zero-Waste Pantry</p>
 
-    <!-- Login -->
     <input type="text" id="username" placeholder="Username">
     <input type="password" id="password" placeholder="Password">
     <button onclick="login()">Login</button>
+
     <p id="loginError" class="error"></p>
 
-    <hr>
+    <p class="link">
+        Don’t have an account?
+        <span onclick="showRegister()">Create one</span>
+    </p>
+</div>
 
-    <!-- Register -->
-    <h3>Create Account</h3>
-    <input type="text" id="newUsername" placeholder="New Username">
-    <input type="password" id="newPassword" placeholder="New Password">
+<!-- ================= REGISTER PAGE ================= -->
+<div id="registerPage" class="login-card" style="display:none;">
+    <h1>Create Account</h1>
+
+    <input type="text" id="newUsername" placeholder="Username">
+    <input type="password" id="newPassword" placeholder="Password">
+
     <select id="role">
         <option value="single">Single User</option>
         <option value="family">Family User</option>
     </select>
+
     <button onclick="createUser()">Register</button>
+
     <p id="registerMsg" class="success"></p>
+
+    <p class="link">
+        Already have an account?
+        <span onclick="showLogin()">Login</span>
+    </p>
 </div>
 
+<!-- ================= MAIN APP ================= -->
 <div id="app" style="display:none;">
 
 <header>
@@ -61,7 +77,6 @@
     <h3>Pantry Dashboard</h3>
 
     <input type="text" id="searchInput" placeholder="Search item...">
-    <p id="searchResult"></p>
 
     <table>
         <thead>
@@ -72,7 +87,6 @@
                 <th>Purchased</th>
                 <th>Expiry</th>
                 <th>Qty</th>
-                <th>Status</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -82,7 +96,7 @@
 
 </div>
 
-<!-- ✅ SCRIPT MUST BE LAST -->
+<!-- SCRIPT MUST BE LAST -->
 <script src="script.js"></script>
 </body>
 </html>
