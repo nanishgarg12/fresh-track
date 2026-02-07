@@ -48,55 +48,82 @@
 
 <!-- ================= MAIN APP ================= -->
 <div id="app" style="display:none;">
-
-<header>
+<aside class="sidebar">
     <h2>FreshTrack</h2>
     <nav>
-        <button onclick="showPage('addItem')">➕ Add</button>
-        <button onclick="showPage('dashboard')">📊 Dashboard</button>
-        <button onclick="openBot()">🤖 Smart Assistant</button>
-        <button onclick="logout()">🚪 Logout</button>
+        <button onclick="showPage('dashboard')">Dashboard</button>
+        <button onclick="showPage('addItem')">Add Item</button>
+        <button onclick="showPage('inventory')">Inventory</button>
+        <button onclick="showPage('recipes')">Recipes</button>
+        <button onclick="showPage('shoppingList')">Shopping List</button>
+        <button onclick="showPage('analytics')">Analytics</button>
     </nav>
-</header>
+</aside>
 
-<section id="addItem" class="card page">
-    <h3>Add Pantry Item</h3>
-    <div class="form-grid">
-        <input type="text" id="itemName" placeholder="Item name">
-        <input type="text" id="category" placeholder="Category">
-        <input type="text" id="batchNumber" placeholder="Batch number">
-        <input type="number" id="quantity" placeholder="Quantity">
-        <input type="date" id="purchaseDate">
-        <input type="date" id="expiryDate">
-    </div>
-    <button onclick="addItem()">Save Item</button>
-    <p id="addMsg" class="success"></p>
-</section>
+<main>
+    <!-- DASHBOARD -->
+    <section id="dashboard" class="page">
+        <h2>Namaste, Home Chef! 👋</h2>
+        <p>Your pantry health is looking great today.</p>
 
-<section id="dashboard" class="card page" style="display:none;">
-    <h3>Pantry Dashboard</h3>
+        <div class="dashboard-cards">
+            <div class="card">
+                <h3>Pantry Health Score</h3>
+                <p id="healthScore">85% <span class="increase">▲5%</span></p>
+            </div>
+            <div class="card">
+                <h3>Total Items</h3>
+                <p id="totalItems">0</p>
+            </div>
+            <div class="card critical">
+                <h3>Expiry Risk Alert</h3>
+                <p id="expiryAlert">0</p>
+            </div>
+            <div class="card">
+                <h3>Estimated Monthly Savings</h3>
+                <p id="monthlySavings">₹0</p>
+            </div>
+        </div>
 
-    <input type="text" id="searchInput" placeholder="Search item...">
+        <h3>Upcoming Expiry (FIFO Alerts)</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Days Left</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="expiryTable"></tbody>
+        </table>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Item</th>
-                <th>Category</th>
-                <th>Batch</th>
-                <th>Purchased</th>
-                <th>Expiry</th>
-                <th>Qty</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody id="pantryTable"></tbody>
-    </table>
-</section>
+        <div class="quick-tip">
+            <strong>Quick Tip 💡</strong>
+            <p id="quickTip">Use oldest stock first!</p>
+        </div>
+    </section>
 
+    <!-- ADD ITEM -->
+    <section id="addItem" class="page" style="display:none;">
+        <h3>Add Pantry Item</h3>
+        <div class="form-grid">
+            <input type="text" id="itemName" placeholder="Item name">
+            <input type="text" id="category" placeholder="Category">
+            <input type="text" id="batchNumber" placeholder="Batch number">
+            <input type="number" id="quantity" placeholder="Quantity">
+            <input type="date" id="purchaseDate">
+            <input type="date" id="expiryDate">
+        </div>
+        <button onclick="addItem()">Save Item</button>
+        <p id="addMsg" class="success"></p>
+    </section>
+</main>
+
+<button class="logout-btn" onclick="logout()">🚪 Logout</button>
+<button class="bot-btn" onclick="openBot()">🤖 Smart Assistant</button>
 </div>
 
-<!-- SCRIPT MUST BE LAST -->
 <script src="script.js"></script>
 </body>
 </html>
