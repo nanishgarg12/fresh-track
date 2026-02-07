@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>FreshTrack – Zero-Waste Pantry</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="loginPage" class="login-card">
+    <h1>FreshTrack</h1>
+    <p class="subtitle">Smart Zero-Waste Pantry</p>
+
+    <!-- Login -->
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+    <p id="loginError" class="error"></p>
+
+    <hr>
+
+    <!-- Register -->
+    <h3>Create Account</h3>
+    <input type="text" id="newUsername" placeholder="New Username">
+    <input type="password" id="newPassword" placeholder="New Password">
+    <select id="role">
+        <option value="single">Single User</option>
+        <option value="family">Family User</option>
+    </select>
+    <button onclick="createUser()">Register</button>
+    <p id="registerMsg" class="success"></p>
+</div>
+
+<div id="app" style="display:none;">
+
+<header>
+    <h2>FreshTrack</h2>
+    <nav>
+        <button onclick="showPage('addItem')">➕ Add</button>
+        <button onclick="showPage('dashboard')">📊 Dashboard</button>
+        <button onclick="openBot()">🤖 Smart Assistant</button>
+        <button onclick="logout()">🚪 Logout</button>
+    </nav>
+</header>
+
+<section id="addItem" class="card page">
+    <h3>Add Pantry Item</h3>
+    <div class="form-grid">
+        <input type="text" id="itemName" placeholder="Item name">
+        <input type="text" id="category" placeholder="Category">
+        <input type="text" id="batchNumber" placeholder="Batch number">
+        <input type="number" id="quantity" placeholder="Quantity">
+        <input type="date" id="purchaseDate">
+        <input type="date" id="expiryDate">
+    </div>
+    <button onclick="addItem()">Save Item</button>
+    <p id="addMsg" class="success"></p>
+</section>
+
+<section id="dashboard" class="card page" style="display:none;">
+    <h3>Pantry Dashboard</h3>
+
+    <input type="text" id="searchInput" placeholder="Search item...">
+    <p id="searchResult"></p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Category</th>
+                <th>Batch</th>
+                <th>Purchased</th>
+                <th>Expiry</th>
+                <th>Qty</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="pantryTable"></tbody>
+    </table>
+</section>
+
+</div>
+
+<!-- ✅ SCRIPT MUST BE LAST -->
+<script src="script.js"></script>
+</body>
+</html>

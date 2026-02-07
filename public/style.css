@@ -1,0 +1,129 @@
+:root {
+    --primary: #2f855a;
+    --secondary: #38b2ac;
+    --bg: #f7fafc;
+    --card: #ffffff;
+    --danger: #e53e3e;
+    --text: #2d3748;
+}
+
+body {
+    font-family: "Segoe UI", sans-serif;
+    background: linear-gradient(120deg, #e6fffa, #f7fafc);
+    margin: 0;
+    color: var(--text);
+}
+
+.login-card {
+    width: 340px;
+    margin: 80px auto;
+    background: var(--card);
+    padding: 30px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.subtitle {
+    color: gray;
+    margin-bottom: 20px;
+}
+
+input {
+    width: 90%;
+    padding: 12px;
+    margin: 8px 0;
+    border-radius: 8px;
+    border: 1px solid #cbd5e0;
+}
+
+button {
+    background: linear-gradient(to right, var(--primary), var(--secondary));
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 25px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+header {
+    background: linear-gradient(to right, var(--primary), var(--secondary));
+    color: white;
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+}
+
+nav button {
+    background: rgba(255,255,255,0.2);
+    margin-left: 10px;
+}
+
+.card {
+    width: 85%;
+    margin: 30px auto;
+    background: var(--card);
+    padding: 25px;
+    border-radius: 14px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th {
+    background: #edfdfd;
+}
+
+th, td {
+    padding: 12px;
+    text-align: center;
+}
+
+.expiring {
+    color: var(--danger);
+    font-weight: bold;
+}
+
+.suggestions {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    max-width: 300px;
+}
+
+.suggestions div {
+    padding: 8px;
+    cursor: pointer;
+}
+
+.suggestions div:hover {
+    background: #e6fffa;
+}
+
+ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+li {
+    padding: 6px 0;
+}
+
+.error {
+    color: var(--danger);
+}
+
+.success {
+    color: var(--primary);
+}
