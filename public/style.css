@@ -1,129 +1,234 @@
-:root {
-    --primary: #2f855a;
-    --secondary: #38b2ac;
-    --bg: #f7fafc;
-    --card: #ffffff;
-    --danger: #e53e3e;
-    --text: #2d3748;
+/* ================= GLOBAL ================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Segoe UI", Tahoma, sans-serif;
 }
 
 body {
-    font-family: "Segoe UI", sans-serif;
-    background: linear-gradient(120deg, #e6fffa, #f7fafc);
-    margin: 0;
-    color: var(--text);
+    background: #f4f7f6;
+    color: #333;
 }
 
+/* ================= LOGIN & REGISTER ================= */
 .login-card {
-    width: 340px;
+    width: 350px;
     margin: 80px auto;
-    background: var(--card);
     padding: 30px;
-    border-radius: 12px;
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
     text-align: center;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.login-card h1 {
+    color: #2e7d32;
+    margin-bottom: 5px;
 }
 
 .subtitle {
-    color: gray;
+    font-size: 14px;
+    color: #666;
     margin-bottom: 20px;
 }
 
-input {
-    width: 90%;
-    padding: 12px;
-    margin: 8px 0;
-    border-radius: 8px;
-    border: 1px solid #cbd5e0;
+.login-card input,
+.login-card select {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    outline: none;
 }
 
-button {
-    background: linear-gradient(to right, var(--primary), var(--secondary));
+.login-card button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    background: #2e7d32;
     color: white;
     border: none;
-    padding: 12px 20px;
-    border-radius: 25px;
+    border-radius: 6px;
     cursor: pointer;
-    margin-top: 10px;
 }
 
-header {
-    background: linear-gradient(to right, var(--primary), var(--secondary));
-    color: white;
-    padding: 15px 30px;
-    display: flex;
-    justify-content: space-between;
+.login-card button:hover {
+    background: #256628;
 }
 
-nav button {
-    background: rgba(255,255,255,0.2);
-    margin-left: 10px;
+.link {
+    margin-top: 15px;
+    font-size: 14px;
 }
 
-.card {
-    width: 85%;
-    margin: 30px auto;
-    background: var(--card);
-    padding: 25px;
-    border-radius: 14px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-}
-
-.form-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-}
-
-th {
-    background: #edfdfd;
-}
-
-th, td {
-    padding: 12px;
-    text-align: center;
-}
-
-.expiring {
-    color: var(--danger);
+.link span {
+    color: #2e7d32;
+    cursor: pointer;
     font-weight: bold;
 }
 
-.suggestions {
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    max-width: 300px;
-}
-
-.suggestions div {
-    padding: 8px;
-    cursor: pointer;
-}
-
-.suggestions div:hover {
-    background: #e6fffa;
-}
-
-ul {
-    list-style: none;
-    padding-left: 0;
-}
-
-li {
-    padding: 6px 0;
-}
-
 .error {
-    color: var(--danger);
+    color: red;
+    margin-top: 10px;
 }
 
 .success {
-    color: var(--primary);
+    color: green;
+    margin-top: 10px;
+}
+
+/* ================= APP LAYOUT ================= */
+#app {
+    display: flex;
+    height: 100vh;
+}
+
+/* ================= SIDEBAR ================= */
+.sidebar {
+    width: 220px;
+    background: #1b5e20;
+    color: white;
+    padding: 20px;
+}
+
+.sidebar h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.sidebar nav button {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0;
+    background: transparent;
+    border: 1px solid #a5d6a7;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.sidebar nav button:hover {
+    background: #2e7d32;
+}
+
+/* ================= MAIN ================= */
+main {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.page h2,
+.page h3 {
+    margin-bottom: 10px;
+}
+
+/* ================= DASHBOARD ================= */
+.dashboard-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.card {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+}
+
+.card h3 {
+    font-size: 16px;
+    margin-bottom: 5px;
+}
+
+.card p {
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.increase {
+    color: green;
+    font-size: 14px;
+}
+
+.card.critical {
+    border-left: 5px solid red;
+}
+
+/* ================= TABLE ================= */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+thead {
+    background: #2e7d32;
+    color: white;
+}
+
+th, td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+/* ================= QUICK TIP ================= */
+.quick-tip {
+    margin-top: 20px;
+    padding: 15px;
+    background: #e8f5e9;
+    border-left: 5px solid #2e7d32;
+    border-radius: 6px;
+}
+
+/* ================= ADD ITEM ================= */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.form-grid input {
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+/* ================= BUTTONS ================= */
+.logout-btn,
+.bot-btn {
+    position: fixed;
+    bottom: 20px;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    color: white;
+}
+
+.logout-btn {
+    right: 20px;
+    background: #c62828;
+}
+
+.bot-btn {
+    right: 120px;
+    background: #1565c0;
+}
+
+.logout-btn:hover {
+    background: #b71c1c;
+}
+
+.bot-btn:hover {
+    background: #0d47a1;
 }
