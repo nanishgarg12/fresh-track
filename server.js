@@ -10,8 +10,8 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ================== MONGODB ==================
-// IMPORTANT: use environment variable for deployment
-mongoose.connect(process.env.MONGO_URI || 
+mongoose.connect(
+  process.env.MONGO_URI ||
   'mongodb+srv://nanishgarg18_db_user:nanish@cluster0.igpmk3q.mongodb.net/FreshTrackDB'
 )
 .then(() => console.log('✅ MongoDB connected'))
@@ -43,12 +43,14 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// ================== AUTH ==================
-
 // REGISTER
 app.post('/api/register', async (req, res) => {
   try {
     const { username, password, role } = req.body;
+
+    if (!username || !password) {
+      return res.status(400).json({ error: "Missing fields" });
+    }
 
     if (await User.findOne({ username })) {
       return res.status(400).json({ error: "User already exists" });
@@ -70,10 +72,14 @@ app.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
 
     const user = await User.findOne({ username });
-    if (!user) return res.status(400).json({ error: "User not found" });
+    if (!user) {
+      return res.status(400).json({ error: "User not found" });
+    }
 
     const ok = await bcrypt.compare(password, user.password);
-    if (!ok) return res.status(400).json({ error: "Wrong password" });
+    if (!ok) {
+      return res.status(400).json({ error: "Wrong password" });
+    }
 
     res.json({ userId: user._id, role: user.role });
   } catch (err) {
@@ -81,8 +87,6 @@ app.post('/api/login', async (req, res) => {
     res.status(500).json({ error: "Login failed" });
   }
 });
-
-// ================== PANTRY ==================
 
 // ADD ITEM
 app.post('/api/item', async (req, res) => {
@@ -107,17 +111,19 @@ app.get('/api/items/:userId', async (req, res) => {
   }
 });
 
-// ✅ USE ITEM (REDUCE QUANTITY)
+// USE ITEM (REDUCE QUANTITY)
 app.put('/api/item/use/:id', async (req, res) => {
   try {
     const item = await PantryItem.findById(req.params.id);
-    if (!item) return res.status(404).json({ error: "Item not found" });
+    if (!item) {
+      return res.status(404).json({ error: "Item not found" });
+    }
 
     item.quantity -= 1;
 
     if (item.quantity <= 0) {
       await item.deleteOne();
-      return res.json({ message: "Item fully used and removed" });
+      return res.json({ message: "Item used completely" });
     }
 
     await item.save();
@@ -125,17 +131,6 @@ app.put('/api/item/use/:id', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to update quantity" });
-  }
-});
-
-// UPDATE ITEM (MANUAL EDIT)
-app.put('/api/item/:id', async (req, res) => {
-  try {
-    await PantryItem.findByIdAndUpdate(req.params.id, req.body);
-    res.json({ message: "Item updated" });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Update failed" });
   }
 });
 

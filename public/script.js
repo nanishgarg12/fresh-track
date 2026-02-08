@@ -1,10 +1,10 @@
 let currentUserId = null;
 let pantry = [];
-let shoppingList = [];
 
 console.log("✅ Frontend script loaded");
 
 /* ================= AUTH ================= */
+
 function showRegister() {
     loginPage.style.display = "none";
     registerPage.style.display = "block";
@@ -16,37 +16,41 @@ function showLogin() {
 }
 
 async function createUser() {
-    const username = newUsername.value;
-    const password = newPassword.value;
-    const role = roleSelect.value || role.value;
-
     const res = await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password, role })
+        body: JSON.stringify({
+            username: newUsername.value,
+            password: newPassword.value,
+            role: role.value
+        })
     });
 
-    const data = await res.json();
-    registerMsg.innerText = data.message || data.error;
-}
-
-async function login() {
-    const username = document.getElementById("username").value;
-    const password = document.getElementById("password").value;
-
-    const res = await fetch("/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password })
-    });
-
-    const data = await res.json();
-
-    if (data.error) {
-        loginError.innerText = data.error;
+    if (!res.ok) {
+        registerMsg.innerText = await res.text();
         return;
     }
 
+    const data = await res.json();
+    registerMsg.innerText = data.message;
+}
+
+async function login() {
+    const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            username: username.value,
+            password: password.value
+        })
+    });
+
+    if (!res.ok) {
+        loginError.innerText = await res.text();
+        return;
+    }
+
+    const data = await res.json();
     currentUserId = data.userId;
 
     loginPage.style.display = "none";
@@ -57,21 +61,20 @@ async function login() {
 }
 
 /* ================= PANTRY ================= */
-async function addItem() {
-    const item = {
-        userId: currentUserId,
-        name: itemName.value,
-        category: category.value,
-        batchNumber: batchNumber.value,
-        quantity: Number(quantity.value),
-        purchaseDate: purchaseDate.value,
-        expiryDate: expiryDate.value
-    };
 
+async function addItem() {
     await fetch("/api/item", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(item)
+        body: JSON.stringify({
+            userId: currentUserId,
+            name: itemName.value,
+            category: category.value,
+            batchNumber: batchNumber.value,
+            quantity: Number(quantity.value),
+            purchaseDate: purchaseDate.value,
+            expiryDate: expiryDate.value
+        })
     });
 
     addMsg.innerText = "Item added!";
@@ -86,14 +89,14 @@ async function loadItems() {
 }
 
 /* ================= INVENTORY ================= */
-function renderInventory() {
-    const table = document.getElementById("inventoryTable");
-    if (!table) return;
 
-    table.innerHTML = "";
+function renderInventory() {
+    if (!inventoryTable) return;
+
+    inventoryTable.innerHTML = "";
 
     pantry.forEach(item => {
-        table.innerHTML += `
+        inventoryTable.innerHTML += `
         <tr>
             <td>${item.name}</td>
             <td>${item.quantity}</td>
@@ -105,90 +108,39 @@ function renderInventory() {
     });
 }
 
-async function useItem(itemId) {
-    await fetch(`/api/item/use/${itemId}`, {
-        method: "PUT"
-    });
+async function useItem(id) {
+    await fetch(`/api/item/use/${id}`, { method: "PUT" });
     loadItems();
 }
 
 /* ================= DASHBOARD ================= */
+
 function renderDashboard() {
-    const now = new Date();
-
-    // Health Score (temporary logic)
-    const healthScore = Math.min(100, 80 + pantry.length);
-    healthScoreEl.innerHTML = `${healthScore}% <span class="increase">▲5%</span>`;
-
     totalItems.innerText = pantry.length;
 
-    const alerts = pantry.filter(
-        i => (new Date(i.expiryDate) - now) / 86400000 < 5
-    );
-    expiryAlert.innerText = alerts.length;
-
-    monthlySavings.innerText = `₹${pantry.length * 50}`;
-
     expiryTable.innerHTML = "";
+    const now = new Date();
+
     pantry
         .sort((a, b) => new Date(a.expiryDate) - new Date(b.expiryDate))
         .forEach(item => {
             const daysLeft = Math.ceil(
                 (new Date(item.expiryDate) - now) / 86400000
             );
-            const status =
-                daysLeft <= 2 ? "Critical" :
-                daysLeft <= 5 ? "Warning" : "Good";
-
             expiryTable.innerHTML += `
             <tr>
                 <td>${item.name}</td>
-                <td>${daysLeft} Days</td>
-                <td>${status}</td>
-                <td>
-                    <button onclick="alert('Recipe suggestion for ${item.name}')">
-                        Find Recipe
-                    </button>
-                </td>
+                <td>${daysLeft}</td>
+                <td>${daysLeft < 5 ? "⚠️" : "✔"}</td>
+                <td><button onclick="alert('Use ${item.name} soon')">Tip</button></td>
             </tr>`;
         });
 
-    quickTip.innerText = "Use the oldest stock first (FIFO) to avoid waste!";
-}
-
-/* ================= SHOPPING LIST ================= */
-function scanItem() {
-    const input = document.getElementById("scanInput").value.toLowerCase();
-    if (!input) return;
-
-    document.getElementById("scanInput").value = "";
-
-    const existing = pantry.find(
-        item => item.name.toLowerCase() === input
-    );
-
-    if (existing) {
-        alert(`Item already exists. Quantity: ${existing.quantity}`);
-        return;
-    }
-
-    if (!shoppingList.includes(input)) {
-        shoppingList.push(input);
-        renderShoppingList();
-    }
-}
-
-function renderShoppingList() {
-    const list = document.getElementById("shoppingList");
-    if (!list) return;
-
-    list.innerHTML = "";
-    shoppingList.forEach(item => {
-        list.innerHTML += `<li>${item}</li>`;
-    });
+    quickTip.innerText = "Use oldest stock first (FIFO)";
 }
 
 /* ================= UI ================= */
+
 function showPage(id) {
     document.querySelectorAll(".page").forEach(p => p.style.display = "none");
     document.getElementById(id).style.display = "block";
