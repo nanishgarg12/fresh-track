@@ -2,115 +2,219 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>FreshTrack</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FreshTrack | Pro Pantry Engine</title>
+  
   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  
   <script src="https://unpkg.com/quagga@0.12.1/dist/quagga.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
 </head>
 <body>
 
-<!-- ========== LOGIN ========== -->
-<div id="loginPage" class="auth-card">
-  <h1>FreshTrack</h1>
-  <p class="subtitle">Zero-Waste Pantry Manager</p>
-
-  <input id="username" placeholder="Username">
-  <input id="password" type="password" placeholder="Password">
-  <button class="primary" onclick="login()">Login</button>
-  <p id="loginError" class="error"></p>
-
-  <p class="switch">
-    New here? <span onclick="showRegister()">Create an account</span>
-  </p>
-</div>
-
-<!-- ========== REGISTER ========== -->
-<div id="registerPage" class="auth-card hidden">
-  <h1>Create Account</h1>
-
-  <input id="newUsername" placeholder="Username">
-  <input id="newPassword" type="password" placeholder="Password">
-
-  <select id="role">
-    <option value="single">Single User</option>
-    <option value="family">Family User</option>
-  </select>
-
-  <button class="primary" onclick="createUser()">Register</button>
-  <p id="registerMsg" class="success"></p>
-
-  <p class="switch">
-    Already registered? <span onclick="showLogin()">Login</span>
-  </p>
-</div>
-
-<!-- ========== APP ========== -->
-<div id="app" class="hidden">
-
-<header>
-  <h2>FreshTrack</h2>
-  <button class="logout" onclick="logout()">Logout</button>
-</header>
-
-<nav class="sidebar">
-  <button onclick="showPage('home')">🏠 Home</button>
-  <button onclick="showPage('addItem')">➕ Add Item</button>
-  <button onclick="showPage('inventory')">📦 Inventory</button>
-  <button onclick="showPage('shopping')">🛒 Shopping List</button>
-</nav>
-
-<main>
-
-<!-- HOME -->
-<section id="home" class="page">
-  <h2>Welcome, <span id="welcomeUser"></span> 👋</h2>
-  <div class="cards">
-    <div class="card">Total Items<br><b id="totalItems">0</b></div>
-    <div class="card danger">Expiring Soon<br><b id="expiryCount">0</b></div>
-  </div>
-</section>
-
-<!-- ADD ITEM -->
-<section id="addItem" class="page hidden">
-  <h3>Add Pantry Item</h3>
-  <input id="itemName" placeholder="Item name">
-  <input id="category" placeholder="Category">
-  <input id="batchNumber" placeholder="Batch number">
-  <input id="quantity" type="number" placeholder="Quantity">
-  <input id="purchaseDate" type="date">
-  <input id="expiryDate" type="date">
-  <button class="primary" onclick="addItem()">Save Item</button>
-  <p id="addMsg" class="success"></p>
-</section>
-
-<!-- INVENTORY -->
-<section id="inventory" class="page hidden">
-  <h3>Your Inventory</h3>
-  <table>
-    <thead>
-      <tr>
-        <th>Item</th><th>Qty</th><th>Expiry</th><th>Use</th>
-      </tr>
-    </thead>
-    <tbody id="inventoryTable"></tbody>
-  </table>
-</section>
-
-<!-- SHOPPING -->
-<section id="shopping" class="page hidden">
-  <h3>Shopping List</h3>
-
-  <div class="scanner-box">
-    <button class="primary" onclick="startScanner()">📷 Scan Barcode</button>
-    <input id="scanInput" placeholder="Or type item name">
-    <button onclick="addToShopping()">Add</button>
+<div id="aiChat" class="ai-drawer hidden">
+  <div class="chat-header">
+    <div class="bot-profile">
+      <span class="bot-avatar">🤖</span>
+      <div class="bot-details">
+        <strong>FreshTrack Assistant</strong>
+        <p>Medicines & Emergencies</p>
+      </div>
+    </div>
+    <button class="close-btn" onclick="toggleAI()">&times;</button>
   </div>
 
-  <div id="scanner" class="hidden"></div>
-  <ul id="shoppingList"></ul>
-</section>
+  <div id="chatBox" class="chat-body">
+    <div class="msg bot">Hello! I'm your Smart Assistant. Ask me about your stock, medicine expiry, or emergency supplies.</div>
+  </div>
 
-</main>
+  <div class="chat-input-area">
+    <input type="text" id="userInput" placeholder="Type a message...">
+    <button class="send-btn" onclick="sendMessage()">
+      <i class="fas fa-paper-plane"></i>
+    </button>
+  </div>
 </div>
+
+<div id="authContainer">
+  <div id="loginPage" class="auth-card">
+    <div class="brand">
+      <i class="fas fa-leaf"></i>
+      <h1>FreshTrack</h1>
+    </div>
+    <p class="subtitle">Zero-Waste Pantry Management</p>
+    <div class="input-group">
+      <input id="username" type="text" placeholder="Username" required>
+      <input id="password" type="password" placeholder="Password" required>
+    </div>
+    <button class="btn-primary" onclick="login()">Sign In</button>
+    <p id="loginError" class="error"></p>
+    <p class="switch">New here? <span onclick="showRegister()">Create Account</span></p>
+  </div>
+
+  <div id="registerPage" class="auth-card hidden">
+    <h1>Create Account</h1>
+    <input id="newUsername" placeholder="Username">
+    <input id="newPassword" type="password" placeholder="Password">
+    <select id="role">
+      <option value="single">Personal Kitchen</option>
+      <option value="family">Family/Shared Kitchen</option>
+    </select>
+    <button class="btn-primary" onclick="createUser()">Register</button>
+    <p class="switch">Already have an account? <span onclick="showLogin()">Login</span></p>
+  </div>
+</div>
+
+<div id="app" class="app-layout hidden">
+  
+  <aside class="sidebar">
+    <div class="sidebar-top">
+      <div class="logo"><i class="fas fa-leaf"></i> FreshTrack</div>
+      <nav>
+        <button class="nav-item active" onclick="showPage('home')">
+          <i class="fas fa-house"></i> <span>Home</span>
+        </button>
+        <button class="nav-item" onclick="showPage('addItem')">
+          <i class="fas fa-circle-plus"></i> <span>Add Item</span>
+        </button>
+        <button class="nav-item" onclick="showPage('inventory')">
+          <i class="fas fa-boxes-stacked"></i> <span>Inventory</span>
+        </button>
+        <button class="nav-item" onclick="showPage('shopping')">
+          <i class="fas fa-cart-shopping"></i> <span>Shopping</span>
+        </button>
+      </nav>
+    </div>
+    
+    <div class="sidebar-bottom">
+      <button class="ai-trigger-btn" onclick="toggleAI()">
+        <i class="fas fa-robot"></i> Smart Assistant
+      </button>
+      <button class="logout-link" onclick="logout()">
+        <i class="fas fa-right-from-bracket"></i> Logout
+      </button>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    
+    <section id="home" class="page">
+      <div class="welcome-banner">
+        <h2>Hello, <span id="welcomeUser">User</span> 👋</h2>
+        <p>Kitchen Status: <span class="badge-status">Optimized</span></p>
+      </div>
+      
+      <div class="dashboard-stats">
+        <div class="stat-card">
+          <i class="fas fa-box"></i>
+          <div class="data">
+            <span class="label">Total Items</span>
+            <span class="value" id="totalItems">0</span>
+          </div>
+        </div>
+        <div class="stat-card danger">
+          <i class="fas fa-hourglass-end"></i>
+          <div class="data">
+            <span class="label">Expiring Soon</span>
+            <span class="value" id="expiryCount">0</span>
+          </div>
+        </div>
+        <div class="stat-card success">
+          <i class="fas fa-seedling"></i>
+          <div class="data">
+            <span class="label">Waste Prevented</span>
+            <span class="value">14.2 kg</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="addItem" class="page hidden">
+      <div class="card-header">
+        <h3>New Pantry Entry</h3>
+        <div class="scan-modes">
+          <button class="mode-btn" onclick="startOCR()"><i class="fas fa-font"></i> Scan Label</button>
+          <button class="mode-btn" onclick="startScanner()"><i class="fas fa-barcode"></i> Scan Barcode</button>
+        </div>
+      </div>
+
+      <div id="cameraView" class="hidden">
+        <video id="video" autoplay playsinline></video>
+        <div class="scanner-overlay"></div>
+        <p id="scanStatus">Align text/barcode here...</p>
+        <button class="btn-close-cam" onclick="stopCamera()">Stop Camera</button>
+      </div>
+
+      <div class="form-grid">
+        <div class="input-box">
+          <label>Item Name</label>
+          <input id="itemName" type="text" placeholder="e.g. Paracetamol or Milk">
+        </div>
+        <div class="input-box">
+          <label>Category</label>
+          <select id="category">
+            <option value="Pantry">Pantry</option>
+            <option value="Medicine">Medicine</option>
+            <option value="Dairy">Dairy</option>
+            <option value="Emergency">Emergency Supply</option>
+          </select>
+        </div>
+        <div class="input-box">
+          <label>Quantity</label>
+          <input id="quantity" type="number" value="1">
+        </div>
+        <div class="input-box">
+          <label>Expiry Date</label>
+          <input id="expiryDate" type="date">
+        </div>
+        <div class="input-box full">
+          <label>Batch Code / Notes</label>
+          <input id="batchNumber" type="text" placeholder="Optional">
+        </div>
+      </div>
+      <button class="btn-save" onclick="addItem()">Confirm & Add Item</button>
+    </section>
+
+    <section id="inventory" class="page hidden">
+      <div class="table-header">
+        <h3>Inventory (FIFO Priority)</h3>
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="text" id="invSearch" placeholder="Search inventory..." onkeyup="searchInventory()">
+        </div>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Status</th>
+              <th>Item Name</th>
+              <th>Qty</th>
+              <th>Expiry Date</th>
+              <th>Manage</th>
+            </tr>
+          </thead>
+          <tbody id="inventoryTable"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="shopping" class="page hidden">
+      <div class="shopping-wrapper">
+        <h3>Shopping List</h3>
+        <div class="shopping-controls">
+          <input id="scanInput" placeholder="Add to list...">
+          <button class="add-btn" onclick="addToShopping()">Add Item</button>
+        </div>
+        <ul id="shoppingList" class="modern-list"></ul>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<canvas id="canvas" class="hidden"></canvas>
 
 <script src="script.js"></script>
 </body>

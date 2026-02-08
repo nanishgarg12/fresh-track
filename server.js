@@ -5,148 +5,169 @@ const cors = require('cors');
 const path = require('path');
 
 const app = express();
-app.use(cors());
+
+// ================== MIDDLEWARE ==================
+app.use(cors()); // Allows your frontend to talk to this backend
 app.use(express.json());
+// Serves your HTML/CSS/JS files from the 'public' folder
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ================== MONGODB ==================
-mongoose.connect(
-  process.env.MONGO_URI ||
-  'mongodb+srv://nanishgarg18_db_user:nanish@cluster0.igpmk3q.mongodb.net/FreshTrackDB'
-)
-.then(() => console.log('✅ MongoDB connected'))
-.catch(err => console.error('❌ MongoDB error:', err));
+// ================== MONGODB CONNECTION ==================
+const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://nanishgarg18_db_user:nanish@cluster0.igpmk3q.mongodb.net/FreshTrackDB';
 
-// ================== SCHEMAS ==================
+mongoose.connect(MONGO_URI)
+  .then(() => console.log('✅ MongoDB Connected: FreshTrack Engine Active'))
+  .catch(err => console.error('❌ MongoDB Connection Error:', err));
+
+// ================== DATA MODELS ==================
 const userSchema = new mongoose.Schema({
-  username: { type: String, unique: true },
-  password: String,
-  role: { type: String, default: 'single' }
+  username: { type: String, unique: true, required: true },
+  password: { type: String, required: true },
+  role: { type: String, default: 'single' },
+  createdAt: { type: Date, default: Date.now }
 });
 const User = mongoose.model('User', userSchema);
 
 const pantrySchema = new mongoose.Schema({
-  userId: mongoose.Schema.Types.ObjectId,
-  name: String,
-  category: String,
-  batchNumber: String,
-  quantity: Number,
-  purchaseDate: Date,
-  expiryDate: Date
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  name: { type: String, required: true },
+  category: { type: String, default: 'Pantry' }, // e.g., Medicine, Dairy, Emergency
+  batchNumber: { type: String, default: 'N/A' },
+  quantity: { type: Number, default: 1 },
+  purchaseDate: { type: Date, default: Date.now },
+  expiryDate: { type: Date, required: true }
 });
 const PantryItem = mongoose.model('PantryItem', pantrySchema);
 
-// ================== ROUTES ==================
+// ================== API ROUTES ==================
 
-// ROOT
+/**
+ * ROOT ROUTE: Serves the Main UI
+ */
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// REGISTER
+/**
+ * AUTH: User Registration
+ */
 app.post('/api/register', async (req, res) => {
   try {
     const { username, password, role } = req.body;
 
     if (!username || !password) {
-      return res.status(400).json({ error: "Missing fields" });
+      return res.status(400).json({ error: "Username and password are required." });
     }
 
-    if (await User.findOne({ username })) {
-      return res.status(400).json({ error: "User already exists" });
+    const existingUser = await User.findOne({ username });
+    if (existingUser) {
+      return res.status(400).json({ error: "Username already taken." });
     }
 
-    const hash = await bcrypt.hash(password, 10);
-    await new User({ username, password: hash, role }).save();
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = new User({ username, password: hashedPassword, role });
+    await newUser.save();
 
-    res.json({ message: "Registration successful" });
+    res.status(201).json({ message: "Account created successfully!" });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Registration failed" });
+    console.error("Reg Error:", err);
+    res.status(500).json({ error: "Internal server error during registration." });
   }
 });
 
-// LOGIN
+/**
+ * AUTH: User Login
+ */
 app.post('/api/login', async (req, res) => {
   try {
     const { username, password } = req.body;
-
     const user = await User.findOne({ username });
-    if (!user) {
-      return res.status(400).json({ error: "User not found" });
+
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      return res.status(401).json({ error: "Invalid username or password." });
     }
 
-    const ok = await bcrypt.compare(password, user.password);
-    if (!ok) {
-      return res.status(400).json({ error: "Wrong password" });
-    }
-
-    res.json({ userId: user._id, role: user.role });
+    res.json({ 
+      userId: user._id, 
+      username: user.username,
+      role: user.role 
+    });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Login failed" });
+    console.error("Login Error:", err);
+    res.status(500).json({ error: "Server error during login." });
   }
 });
 
-// ADD ITEM
+/**
+ * PANTRY: Add New Item (Food/Medicine/Emergency)
+ */
 app.post('/api/item', async (req, res) => {
   try {
-    await new PantryItem(req.body).save();
-    res.json({ message: "Item added" });
+    const newItem = new PantryItem(req.body);
+    await newItem.save();
+    res.status(201).json({ message: "Item added to inventory." });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to add item" });
+    console.error("Add Item Error:", err);
+    res.status(500).json({ error: "Could not save item." });
   }
 });
 
-// GET ITEMS (FIFO)
+/**
+ * PANTRY: Get All Items for User (Sorted by FIFO - Expiry Date)
+ */
 app.get('/api/items/:userId', async (req, res) => {
   try {
     const items = await PantryItem.find({ userId: req.params.userId })
-      .sort({ expiryDate: 1, purchaseDate: 1 });
+      .sort({ expiryDate: 1 }); // FIFO: Soonest expiry first
     res.json(items);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to fetch items" });
+    res.status(500).json({ error: "Could not fetch inventory." });
   }
 });
 
-// USE ITEM (REDUCE QUANTITY)
+/**
+ * PANTRY: Use/Decrement Item Quantity
+ */
 app.put('/api/item/use/:id', async (req, res) => {
   try {
     const item = await PantryItem.findById(req.params.id);
-    if (!item) {
-      return res.status(404).json({ error: "Item not found" });
-    }
+    if (!item) return res.status(404).json({ error: "Item not found." });
 
     item.quantity -= 1;
 
     if (item.quantity <= 0) {
       await item.deleteOne();
-      return res.json({ message: "Item used completely" });
+      return res.json({ message: "Item used up and removed from stock." });
     }
 
     await item.save();
-    res.json({ message: "Quantity updated", quantity: item.quantity });
+    res.json({ message: "Quantity updated.", newQuantity: item.quantity });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to update quantity" });
+    res.status(500).json({ error: "Update failed." });
   }
 });
 
-// DELETE ITEM
+/**
+ * PANTRY: Manual Delete
+ */
 app.delete('/api/item/:id', async (req, res) => {
   try {
     await PantryItem.findByIdAndDelete(req.params.id);
-    res.json({ message: "Item deleted" });
+    res.json({ message: "Item discarded." });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Delete failed" });
+    res.status(500).json({ error: "Delete operation failed." });
   }
 });
 
-// ================== START ==================
+// ================== SERVER START ==================
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`
+  🚀 FreshTrack Pro Server Running
+  ----------------------------------
+  📡 URL: http://localhost:${PORT}
+  📦 Mode: Development
+  🔋 FIFO Engine: Active
+  ----------------------------------
+  `);
 });
