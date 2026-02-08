@@ -7,7 +7,7 @@ function showRegister(){ loginPage.classList.add("hidden"); registerPage.classLi
 function showLogin(){ registerPage.classList.add("hidden"); loginPage.classList.remove("hidden"); }
 
 async function login(){
-  const res = await fetch(`${API}/api/login`,{
+  const res = await fetch(`${API_BASE}/api/login`,{
     method:"POST",
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({username:username.value,password:password.value})
