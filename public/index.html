@@ -24,11 +24,9 @@
     </div>
     <button class="close-btn" onclick="toggleAI()">&times;</button>
   </div>
-
   <div id="chatBox" class="chat-body">
     <div class="msg bot">Hello! I'm your Smart Assistant. Ask me about your stock, medicine expiry, or emergency supplies.</div>
   </div>
-
   <div class="chat-input-area">
     <input type="text" id="userInput" placeholder="Type a message...">
     <button class="send-btn" onclick="sendMessage()">
@@ -38,7 +36,7 @@
 </div>
 
 <div id="authContainer">
-  <div id="loginPage" class="auth-card">
+  <div class="bg-mesh"></div> <div id="loginPage" class="auth-card">
     <div class="brand">
       <i class="fas fa-leaf"></i>
       <h1>FreshTrack</h1>
@@ -67,7 +65,6 @@
 </div>
 
 <div id="app" class="app-layout hidden">
-  
   <aside class="sidebar">
     <div class="sidebar-top">
       <div class="logo"><i class="fas fa-leaf"></i> FreshTrack</div>
@@ -86,7 +83,6 @@
         </button>
       </nav>
     </div>
-    
     <div class="sidebar-bottom">
       <button class="ai-trigger-btn" onclick="toggleAI()">
         <i class="fas fa-robot"></i> Smart Assistant
@@ -98,34 +94,23 @@
   </aside>
 
   <main class="main-content">
-    
     <section id="home" class="page">
       <div class="welcome-banner">
         <h2>Hello, <span id="welcomeUser">User</span> 👋</h2>
         <p>Kitchen Status: <span class="badge-status">Optimized</span></p>
       </div>
-      
       <div class="dashboard-stats">
         <div class="stat-card">
           <i class="fas fa-box"></i>
-          <div class="data">
-            <span class="label">Total Items</span>
-            <span class="value" id="totalItems">0</span>
-          </div>
+          <div class="data"><span class="label">Total Items</span><span class="value" id="totalItems">0</span></div>
         </div>
         <div class="stat-card danger">
           <i class="fas fa-hourglass-end"></i>
-          <div class="data">
-            <span class="label">Expiring Soon</span>
-            <span class="value" id="expiryCount">0</span>
-          </div>
+          <div class="data"><span class="label">Expiring Soon</span><span class="value" id="expiryCount">0</span></div>
         </div>
         <div class="stat-card success">
           <i class="fas fa-seedling"></i>
-          <div class="data">
-            <span class="label">Waste Prevented</span>
-            <span class="value">14.2 kg</span>
-          </div>
+          <div class="data"><span class="label">Waste Prevented</span><span class="value">14.2 kg</span></div>
         </div>
       </div>
     </section>
@@ -138,19 +123,14 @@
           <button class="mode-btn" onclick="startScanner()"><i class="fas fa-barcode"></i> Scan Barcode</button>
         </div>
       </div>
-
       <div id="cameraView" class="hidden">
         <video id="video" autoplay playsinline></video>
         <div class="scanner-overlay"></div>
         <p id="scanStatus">Align text/barcode here...</p>
         <button class="btn-close-cam" onclick="stopCamera()">Stop Camera</button>
       </div>
-
       <div class="form-grid">
-        <div class="input-box">
-          <label>Item Name</label>
-          <input id="itemName" type="text" placeholder="e.g. Paracetamol or Milk">
-        </div>
+        <div class="input-box"><label>Item Name</label><input id="itemName" type="text" placeholder="e.g. Milk"></div>
         <div class="input-box">
           <label>Category</label>
           <select id="category">
@@ -160,18 +140,9 @@
             <option value="Emergency">Emergency Supply</option>
           </select>
         </div>
-        <div class="input-box">
-          <label>Quantity</label>
-          <input id="quantity" type="number" value="1">
-        </div>
-        <div class="input-box">
-          <label>Expiry Date</label>
-          <input id="expiryDate" type="date">
-        </div>
-        <div class="input-box full">
-          <label>Batch Code / Notes</label>
-          <input id="batchNumber" type="text" placeholder="Optional">
-        </div>
+        <div class="input-box"><label>Quantity</label><input id="quantity" type="number" value="1"></div>
+        <div class="input-box"><label>Expiry Date</label><input id="expiryDate" type="date"></div>
+        <div class="input-box full"><label>Batch Code / Notes</label><input id="batchNumber" type="text" placeholder="Optional"></div>
       </div>
       <button class="btn-save" onclick="addItem()">Confirm & Add Item</button>
     </section>
@@ -187,13 +158,7 @@
       <div class="table-container">
         <table>
           <thead>
-            <tr>
-              <th>Status</th>
-              <th>Item Name</th>
-              <th>Qty</th>
-              <th>Expiry Date</th>
-              <th>Manage</th>
-            </tr>
+            <tr><th>Status</th><th>Item Name</th><th>Qty</th><th>Expiry Date</th><th>Manage</th></tr>
           </thead>
           <tbody id="inventoryTable"></tbody>
         </table>
@@ -210,12 +175,10 @@
         <ul id="shoppingList" class="modern-list"></ul>
       </div>
     </section>
-
   </main>
 </div>
 
 <canvas id="canvas" class="hidden"></canvas>
-
 <script src="script.js"></script>
 </body>
 </html>

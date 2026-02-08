@@ -8,6 +8,8 @@
   --white: #ffffff;
   --shadow: 0 10px 30px rgba(0,0,0,.08);
   --sidebar-width: 250px;
+  /* New Gradient for Animation */
+  --mesh-gradient: linear-gradient(-45deg, #2E7D6B, #1a4a3f, #FFB703, #235d50);
 }
 
 * { box-sizing: border-box; font-family: 'Inter', sans-serif; transition: all 0.2s ease; }
@@ -22,49 +24,102 @@ body {
 
 .hidden { display: none !important; }
 
-/* ========== AUTHENTICATION ========== */
+/* ========== AUTHENTICATION (ANIMATED & GLASS) ========== */
 #authContainer {
   height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(135deg, var(--primary), #1a4a3f);
+  /* Animated Mesh Background */
+  background: var(--mesh-gradient);
+  background-size: 400% 400%;
+  animation: meshFlow 15s ease infinite;
+  position: relative;
+  overflow: hidden;
 }
 
+@keyframes meshFlow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Glassmorphism "Bag" Card */
 .auth-card {
-  width: 350px;
-  padding: 2.5rem;
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+  width: 400px;
+  padding: 3rem;
+  background: rgba(255, 255, 255, 0.15); /* Semi-transparent */
+  backdrop-filter: blur(15px); /* Frost effect */
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.2); /* Glass edge */
+  border-radius: 24px;
+  box-shadow: 0 25px 50px rgba(0,0,0,0.2);
   text-align: center;
+  color: white; /* Contrast against dark glass */
+  z-index: 10;
+  animation: cardFadeUp 0.8s ease-out;
 }
 
-.auth-card h1 { margin-bottom: 0.5rem; color: var(--primary); }
+@keyframes cardFadeUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
-input, select {
+.auth-card h1 { 
+  margin-bottom: 0.5rem; 
+  color: white; /* Adjusted for glass look */
+  font-weight: 800;
+  letter-spacing: -1px;
+}
+
+.auth-card .subtitle {
+  color: rgba(255,255,255,0.8);
+  margin-bottom: 20px;
+}
+
+/* Form elements inside Glass Card */
+.auth-card input, .auth-card select {
   width: 100%;
   padding: 12px;
   margin: 10px 0;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  background: #fdfdfd;
+  border: none;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.9); /* Solid inputs for readability */
+  color: var(--text);
+}
+
+.auth-card .switch {
+  margin-top: 15px;
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.9);
+}
+
+.auth-card .switch span {
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: bold;
 }
 
 button.btn-primary {
-  background: var(--primary);
-  color: white;
+  background: var(--accent); /* Accent color for the main button */
+  color: #000;
   border: none;
-  padding: 12px;
+  padding: 14px;
   width: 100%;
-  border-radius: 8px;
-  font-weight: 600;
+  border-radius: 10px;
+  font-weight: 700;
   cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 15px rgba(255, 183, 3, 0.3);
 }
 
-button.btn-primary:hover { background: var(--primary-dark); }
+button.btn-primary:hover { 
+  background: #fca311; 
+  transform: translateY(-2px);
+}
 
-/* ========== APP LAYOUT ========== */
+/* ========== APP LAYOUT (PRESERVED) ========== */
 .app-layout {
   display: grid;
   grid-template-columns: var(--sidebar-width) 1fr;
