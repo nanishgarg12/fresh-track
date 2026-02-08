@@ -1,157 +1,196 @@
+/* ================= GLOBAL ================= */
+
+const API_BASE =
+  window.location.hostname === "localhost"
+    ? "http://localhost:5000"
+    : "";
+
 let currentUserId = null;
 let pantry = [];
 
 console.log("✅ Frontend script loaded");
 
+/* ================= DOM ================= */
+
+const loginPage = document.getElementById("loginPage");
+const registerPage = document.getElementById("registerPage");
+const app = document.getElementById("app");
+
+const username = document.getElementById("username");
+const password = document.getElementById("password");
+const loginError = document.getElementById("loginError");
+
+const newUsername = document.getElementById("newUsername");
+const newPassword = document.getElementById("newPassword");
+const role = document.getElementById("role");
+const registerMsg = document.getElementById("registerMsg");
+
+const itemName = document.getElementById("itemName");
+const category = document.getElementById("category");
+const batchNumber = document.getElementById("batchNumber");
+const quantity = document.getElementById("quantity");
+const purchaseDate = document.getElementById("purchaseDate");
+const expiryDate = document.getElementById("expiryDate");
+const addMsg = document.getElementById("addMsg");
+
+const inventoryTable = document.getElementById("inventoryTable");
+const expiryTable = document.getElementById("expiryTable");
+const totalItems = document.getElementById("totalItems");
+const quickTip = document.getElementById("quickTip");
+
 /* ================= AUTH ================= */
 
 function showRegister() {
-    loginPage.style.display = "none";
-    registerPage.style.display = "block";
+  loginPage.style.display = "none";
+  registerPage.style.display = "block";
 }
 
 function showLogin() {
-    registerPage.style.display = "none";
-    loginPage.style.display = "block";
+  registerPage.style.display = "none";
+  loginPage.style.display = "block";
 }
 
 async function createUser() {
-    const res = await fetch("/api/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            username: newUsername.value,
-            password: newPassword.value,
-            role: role.value
-        })
-    });
+  const res = await fetch(`${API_BASE}/api/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      username: newUsername.value,
+      password: newPassword.value,
+      role: role.value,
+    }),
+  });
 
-    if (!res.ok) {
-        registerMsg.innerText = await res.text();
-        return;
-    }
-
-    const data = await res.json();
-    registerMsg.innerText = data.message;
+  const data = await res.json();
+  registerMsg.innerText = data.message || data.error;
 }
 
 async function login() {
-    const res = await fetch("/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            username: username.value,
-            password: password.value
-        })
-    });
+  const res = await fetch(`${API_BASE}/api/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      username: username.value,
+      password: password.value,
+    }),
+  });
 
-    if (!res.ok) {
-        loginError.innerText = await res.text();
-        return;
-    }
+  const data = await res.json();
 
-    const data = await res.json();
-    currentUserId = data.userId;
+  if (!res.ok) {
+    loginError.innerText = data.error;
+    return;
+  }
 
-    loginPage.style.display = "none";
-    registerPage.style.display = "none";
-    app.style.display = "block";
+  currentUserId = data.userId;
 
-    loadItems();
+  loginPage.style.display = "none";
+  registerPage.style.display = "none";
+  app.style.display = "block";
+
+  loadItems();
 }
 
 /* ================= PANTRY ================= */
 
 async function addItem() {
-    await fetch("/api/item", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            userId: currentUserId,
-            name: itemName.value,
-            category: category.value,
-            batchNumber: batchNumber.value,
-            quantity: Number(quantity.value),
-            purchaseDate: purchaseDate.value,
-            expiryDate: expiryDate.value
-        })
-    });
+  await fetch(`${API_BASE}/api/item`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      userId: currentUserId,
+      name: itemName.value,
+      category: category.value,
+      batchNumber: batchNumber.value,
+      quantity: Number(quantity.value),
+      purchaseDate: purchaseDate.value,
+      expiryDate: expiryDate.value,
+    }),
+  });
 
-    addMsg.innerText = "Item added!";
-    loadItems();
+  addMsg.innerText = "Item added!";
+  loadItems();
 }
 
 async function loadItems() {
-    const res = await fetch(`/api/items/${currentUserId}`);
-    pantry = await res.json();
-    renderDashboard();
-    renderInventory();
+  const res = await fetch(`${API_BASE}/api/items/${currentUserId}`);
+  pantry = await res.json();
+  renderDashboard();
+  renderInventory();
 }
 
 /* ================= INVENTORY ================= */
 
 function renderInventory() {
-    if (!inventoryTable) return;
+  inventoryTable.innerHTML = "";
 
-    inventoryTable.innerHTML = "";
-
-    pantry.forEach(item => {
-        inventoryTable.innerHTML += `
-        <tr>
-            <td>${item.name}</td>
-            <td>${item.quantity}</td>
-            <td>${item.expiryDate}</td>
-            <td>
-                <button onclick="useItem('${item._id}')">Use 1</button>
-            </td>
-        </tr>`;
-    });
-}
-
-async function useItem(id) {
-    await fetch(`/api/item/use/${id}`, { method: "PUT" });
-    loadItems();
+  pantry.forEach((item) => {
+    inventoryTable.innerHTML += `
+      <tr>
+        <td>${item.name}</td>
+        <td>${item.quantity}</td>
+        <td>${new Date(item.expiryDate).toLocaleDateString()}</td>
+      </tr>
+    `;
+  });
 }
 
 /* ================= DASHBOARD ================= */
 
 function renderDashboard() {
-    totalItems.innerText = pantry.length;
+  totalItems.innerText = pantry.length;
+  expiryTable.innerHTML = "";
 
-    expiryTable.innerHTML = "";
-    const now = new Date();
+  const now = new Date();
 
-    pantry
-        .sort((a, b) => new Date(a.expiryDate) - new Date(b.expiryDate))
-        .forEach(item => {
-            const daysLeft = Math.ceil(
-                (new Date(item.expiryDate) - now) / 86400000
-            );
-            expiryTable.innerHTML += `
-            <tr>
-                <td>${item.name}</td>
-                <td>${daysLeft}</td>
-                <td>${daysLeft < 5 ? "⚠️" : "✔"}</td>
-                <td><button onclick="alert('Use ${item.name} soon')">Tip</button></td>
-            </tr>`;
-        });
+  pantry
+    .sort((a, b) => new Date(a.expiryDate) - new Date(b.expiryDate))
+    .forEach((item) => {
+      const daysLeft = Math.ceil(
+        (new Date(item.expiryDate) - now) / 86400000
+      );
 
-    quickTip.innerText = "Use oldest stock first (FIFO)";
+      expiryTable.innerHTML += `
+        <tr>
+          <td>${item.name}</td>
+          <td>${daysLeft}</td>
+          <td>${daysLeft < 5 ? "⚠️" : "✔️"}</td>
+        </tr>
+      `;
+    });
+
+  quickTip.innerText = "Use oldest stock first (FIFO)";
 }
 
 /* ================= UI ================= */
 
-function showPage(id) {
-    document.querySelectorAll(".page").forEach(p => p.style.display = "none");
-    document.getElementById(id).style.display = "block";
-}
-
 function logout() {
-    currentUserId = null;
-    app.style.display = "none";
-    showLogin();
+  currentUserId = null;
+  app.style.display = "none";
+  showLogin();
 }
 
 function openBot() {
-    window.open("bot.html", "_blank");
+  window.open("bot.html", "_blank");
+}
+const shoppingListEl = document.getElementById("shoppingList");
+const scanInput = document.getElementById("scanInput");
+
+function scanItem() {
+    const name = scanInput.value.trim();
+    if (!name) return;
+
+    const existing = pantry.find(
+        i => i.name.toLowerCase() === name.toLowerCase()
+    );
+
+    if (existing) {
+        alert(`${name} already exists in pantry (Qty: ${existing.quantity})`);
+    } else {
+        const li = document.createElement("li");
+        li.innerText = name;
+        shoppingListEl.appendChild(li);
+    }
+
+    scanInput.value = "";
 }
