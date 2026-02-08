@@ -1,108 +1,115 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>FreshTrack – Zero-Waste Pantry</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <title>FreshTrack</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://unpkg.com/quagga@0.12.1/dist/quagga.min.js"></script>
 </head>
 <body>
 
-<!-- ================= LOGIN ================= -->
-<div id="loginPage" class="login-card">
-    <h1>FreshTrack</h1>
-    <p class="subtitle">Smart Zero-Waste Pantry</p>
+<!-- ========== LOGIN ========== -->
+<div id="loginPage" class="auth-card">
+  <h1>FreshTrack</h1>
+  <p class="subtitle">Zero-Waste Pantry Manager</p>
 
-    <input id="username" placeholder="Username">
-    <input id="password" type="password" placeholder="Password">
-    <button onclick="login()">Login</button>
-    <p id="loginError" class="error"></p>
+  <input id="username" placeholder="Username">
+  <input id="password" type="password" placeholder="Password">
+  <button class="primary" onclick="login()">Login</button>
+  <p id="loginError" class="error"></p>
 
-    <p class="link">
-        New user? <span onclick="showRegister()">Create account</span>
-    </p>
+  <p class="switch">
+    New here? <span onclick="showRegister()">Create an account</span>
+  </p>
 </div>
 
-<!-- ================= REGISTER ================= -->
-<div id="registerPage" class="login-card" style="display:none;">
-    <h1>Create Account</h1>
+<!-- ========== REGISTER ========== -->
+<div id="registerPage" class="auth-card hidden">
+  <h1>Create Account</h1>
 
-    <input id="newUsername" placeholder="Username">
-    <input id="newPassword" type="password" placeholder="Password">
+  <input id="newUsername" placeholder="Username">
+  <input id="newPassword" type="password" placeholder="Password">
 
-    <select id="role">
-        <option value="single">Single User</option>
-        <option value="family">Family User</option>
-    </select>
+  <select id="role">
+    <option value="single">Single User</option>
+    <option value="family">Family User</option>
+  </select>
 
-    <button onclick="createUser()">Register</button>
-    <p id="registerMsg" class="success"></p>
+  <button class="primary" onclick="createUser()">Register</button>
+  <p id="registerMsg" class="success"></p>
 
-    <p class="link">
-        Already registered? <span onclick="showLogin()">Login</span>
-    </p>
+  <p class="switch">
+    Already registered? <span onclick="showLogin()">Login</span>
+  </p>
 </div>
 
-<!-- ================= APP ================= -->
-<div id="app" style="display:none;">
+<!-- ========== APP ========== -->
+<div id="app" class="hidden">
 
-<aside class="sidebar">
-    <h2>FreshTrack</h2>
-    <button onclick="showPage('dashboard')">Dashboard</button>
-    <button onclick="showPage('addItem')">Add Item</button>
-    <button onclick="showPage('inventory')">Inventory</button>
-    <button onclick="showPage('shopping')">Shopping List</button>
-</aside>
+<header>
+  <h2>FreshTrack</h2>
+  <button class="logout" onclick="logout()">Logout</button>
+</header>
+
+<nav class="sidebar">
+  <button onclick="showPage('home')">🏠 Home</button>
+  <button onclick="showPage('addItem')">➕ Add Item</button>
+  <button onclick="showPage('inventory')">📦 Inventory</button>
+  <button onclick="showPage('shopping')">🛒 Shopping List</button>
+</nav>
 
 <main>
 
-<!-- DASHBOARD -->
-<section id="dashboard" class="page">
-    <h2>Namaste 👋</h2>
-    <p>Total Items: <b id="totalItems">0</b></p>
+<!-- HOME -->
+<section id="home" class="page">
+  <h2>Welcome, <span id="welcomeUser"></span> 👋</h2>
+  <div class="cards">
+    <div class="card">Total Items<br><b id="totalItems">0</b></div>
+    <div class="card danger">Expiring Soon<br><b id="expiryCount">0</b></div>
+  </div>
 </section>
 
 <!-- ADD ITEM -->
-<section id="addItem" class="page" style="display:none;">
-    <h3>Add Pantry / Medicine</h3>
-
-    <input id="itemName" placeholder="Item name">
-    <input id="category" placeholder="Category">
-    <input id="quantity" type="number" placeholder="Quantity">
-    <input id="expiryDate" type="date">
-
-    <button onclick="addItem()">Save</button>
-    <p id="addMsg" class="success"></p>
+<section id="addItem" class="page hidden">
+  <h3>Add Pantry Item</h3>
+  <input id="itemName" placeholder="Item name">
+  <input id="category" placeholder="Category">
+  <input id="batchNumber" placeholder="Batch number">
+  <input id="quantity" type="number" placeholder="Quantity">
+  <input id="purchaseDate" type="date">
+  <input id="expiryDate" type="date">
+  <button class="primary" onclick="addItem()">Save Item</button>
+  <p id="addMsg" class="success"></p>
 </section>
 
 <!-- INVENTORY -->
-<section id="inventory" class="page" style="display:none;">
-    <h3>Your Inventory</h3>
-    <table>
-        <thead>
-            <tr>
-                <th>Item</th>
-                <th>Qty</th>
-                <th>Expiry</th>
-                <th>Use</th>
-            </tr>
-        </thead>
-        <tbody id="inventoryTable"></tbody>
-    </table>
+<section id="inventory" class="page hidden">
+  <h3>Your Inventory</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Item</th><th>Qty</th><th>Expiry</th><th>Use</th>
+      </tr>
+    </thead>
+    <tbody id="inventoryTable"></tbody>
+  </table>
 </section>
 
-<!-- SHOPPING LIST -->
-<section id="shopping" class="page" style="display:none;">
-    <h3>Shopping List (Scan / Enter)</h3>
+<!-- SHOPPING -->
+<section id="shopping" class="page hidden">
+  <h3>Shopping List</h3>
 
-    <input id="scanInput" placeholder="Scan or type item name">
-    <button onclick="scanItem()">Add</button>
+  <div class="scanner-box">
+    <button class="primary" onclick="startScanner()">📷 Scan Barcode</button>
+    <input id="scanInput" placeholder="Or type item name">
+    <button onclick="addToShopping()">Add</button>
+  </div>
 
-    <ul id="shoppingList"></ul>
+  <div id="scanner" class="hidden"></div>
+  <ul id="shoppingList"></ul>
 </section>
 
 </main>
-
-<button class="logout-btn" onclick="logout()">Logout</button>
 </div>
 
 <script src="script.js"></script>

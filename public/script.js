@@ -1,196 +1,114 @@
-/* ================= GLOBAL ================= */
-
-const API_BASE =
-  window.location.hostname === "localhost"
-    ? "http://localhost:5000"
-    : "";
-
+const API = window.location.origin;
 let currentUserId = null;
 let pantry = [];
+let shopping = [];
 
-console.log("✅ Frontend script loaded");
+function showRegister(){ loginPage.classList.add("hidden"); registerPage.classList.remove("hidden"); }
+function showLogin(){ registerPage.classList.add("hidden"); loginPage.classList.remove("hidden"); }
 
-/* ================= DOM ================= */
-
-const loginPage = document.getElementById("loginPage");
-const registerPage = document.getElementById("registerPage");
-const app = document.getElementById("app");
-
-const username = document.getElementById("username");
-const password = document.getElementById("password");
-const loginError = document.getElementById("loginError");
-
-const newUsername = document.getElementById("newUsername");
-const newPassword = document.getElementById("newPassword");
-const role = document.getElementById("role");
-const registerMsg = document.getElementById("registerMsg");
-
-const itemName = document.getElementById("itemName");
-const category = document.getElementById("category");
-const batchNumber = document.getElementById("batchNumber");
-const quantity = document.getElementById("quantity");
-const purchaseDate = document.getElementById("purchaseDate");
-const expiryDate = document.getElementById("expiryDate");
-const addMsg = document.getElementById("addMsg");
-
-const inventoryTable = document.getElementById("inventoryTable");
-const expiryTable = document.getElementById("expiryTable");
-const totalItems = document.getElementById("totalItems");
-const quickTip = document.getElementById("quickTip");
-
-/* ================= AUTH ================= */
-
-function showRegister() {
-  loginPage.style.display = "none";
-  registerPage.style.display = "block";
-}
-
-function showLogin() {
-  registerPage.style.display = "none";
-  loginPage.style.display = "block";
-}
-
-async function createUser() {
-  const res = await fetch(`${API_BASE}/api/register`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      username: newUsername.value,
-      password: newPassword.value,
-      role: role.value,
-    }),
+async function login(){
+  const res = await fetch(`${API}/api/login`,{
+    method:"POST",
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({username:username.value,password:password.value})
   });
-
   const data = await res.json();
-  registerMsg.innerText = data.message || data.error;
-}
-
-async function login() {
-  const res = await fetch(`${API_BASE}/api/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      username: username.value,
-      password: password.value,
-    }),
-  });
-
-  const data = await res.json();
-
-  if (!res.ok) {
-    loginError.innerText = data.error;
-    return;
-  }
-
-  currentUserId = data.userId;
-
-  loginPage.style.display = "none";
-  registerPage.style.display = "none";
-  app.style.display = "block";
-
+  if(!res.ok){ loginError.innerText=data.error; return; }
+  currentUserId=data.userId;
+  welcomeUser.innerText=username.value;
+  loginPage.classList.add("hidden");
+  app.classList.remove("hidden");
   loadItems();
 }
 
-/* ================= PANTRY ================= */
-
-async function addItem() {
-  await fetch(`${API_BASE}/api/item`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      userId: currentUserId,
-      name: itemName.value,
-      category: category.value,
-      batchNumber: batchNumber.value,
-      quantity: Number(quantity.value),
-      purchaseDate: purchaseDate.value,
-      expiryDate: expiryDate.value,
-    }),
+async function createUser(){
+  const res = await fetch(`${API}/api/register`,{
+    method:"POST",
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({username:newUsername.value,password:newPassword.value,role:role.value})
   });
+  const data=await res.json();
+  registerMsg.innerText=data.message||data.error;
+}
 
-  addMsg.innerText = "Item added!";
+function showPage(id){
+  document.querySelectorAll(".page").forEach(p=>p.classList.add("hidden"));
+  document.getElementById(id).classList.remove("hidden");
+}
+
+async function addItem(){
+  await fetch(`${API}/api/item`,{
+    method:"POST",
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      userId:currentUserId,
+      name:itemName.value,
+      category:category.value,
+      batchNumber:batchNumber.value,
+      quantity:+quantity.value,
+      purchaseDate:purchaseDate.value,
+      expiryDate:expiryDate.value
+    })
+  });
+  addMsg.innerText="Item added!";
   loadItems();
 }
 
-async function loadItems() {
-  const res = await fetch(`${API_BASE}/api/items/${currentUserId}`);
-  pantry = await res.json();
-  renderDashboard();
+async function loadItems(){
+  const res=await fetch(`${API}/api/items/${currentUserId}`);
+  pantry=await res.json();
+  renderHome();
   renderInventory();
 }
 
-/* ================= INVENTORY ================= */
+function renderHome(){
+  totalItems.innerText=pantry.length;
+  expiryCount.innerText=pantry.filter(i=>new Date(i.expiryDate)-Date.now()<5*86400000).length;
+}
 
-function renderInventory() {
-  inventoryTable.innerHTML = "";
-
-  pantry.forEach((item) => {
-    inventoryTable.innerHTML += `
-      <tr>
-        <td>${item.name}</td>
-        <td>${item.quantity}</td>
-        <td>${new Date(item.expiryDate).toLocaleDateString()}</td>
-      </tr>
-    `;
+function renderInventory(){
+  inventoryTable.innerHTML="";
+  pantry.forEach(i=>{
+    inventoryTable.innerHTML+=`
+    <tr>
+      <td>${i.name}</td>
+      <td>${i.quantity}</td>
+      <td>${new Date(i.expiryDate).toLocaleDateString()}</td>
+      <td><button onclick="useItem('${i._id}')">Use</button></td>
+    </tr>`;
   });
 }
 
-/* ================= DASHBOARD ================= */
-
-function renderDashboard() {
-  totalItems.innerText = pantry.length;
-  expiryTable.innerHTML = "";
-
-  const now = new Date();
-
-  pantry
-    .sort((a, b) => new Date(a.expiryDate) - new Date(b.expiryDate))
-    .forEach((item) => {
-      const daysLeft = Math.ceil(
-        (new Date(item.expiryDate) - now) / 86400000
-      );
-
-      expiryTable.innerHTML += `
-        <tr>
-          <td>${item.name}</td>
-          <td>${daysLeft}</td>
-          <td>${daysLeft < 5 ? "⚠️" : "✔️"}</td>
-        </tr>
-      `;
-    });
-
-  quickTip.innerText = "Use oldest stock first (FIFO)";
+async function useItem(id){
+  await fetch(`${API}/api/item/use/${id}`,{method:"PUT"});
+  loadItems();
 }
 
-/* ================= UI ================= */
+/* ===== Scanner ===== */
+function startScanner(){
+  scanner.classList.remove("hidden");
+  Quagga.init({
+    inputStream:{name:"Live",type:"LiveStream",target:scanner},
+    decoder:{readers:["code_128_reader","ean_reader"]}
+  },()=>Quagga.start());
 
-function logout() {
-  currentUserId = null;
-  app.style.display = "none";
-  showLogin();
+  Quagga.onDetected(d=>{
+    scanInput.value=d.codeResult.code;
+    Quagga.stop();
+    scanner.classList.add("hidden");
+  });
 }
 
-function openBot() {
-  window.open("bot.html", "_blank");
+function addToShopping(){
+  const name=scanInput.value.trim();
+  if(!name) return;
+  const exists=pantry.find(p=>p.name.toLowerCase()===name.toLowerCase());
+  if(exists){ alert(`Already in pantry (Qty: ${exists.quantity})`); return; }
+  if(!shopping.includes(name)){
+    shopping.push(name);
+    shoppingList.innerHTML+=`<li>${name}</li>`;
+  }
+  scanInput.value="";
 }
-const shoppingListEl = document.getElementById("shoppingList");
-const scanInput = document.getElementById("scanInput");
 
-function scanItem() {
-    const name = scanInput.value.trim();
-    if (!name) return;
-
-    const existing = pantry.find(
-        i => i.name.toLowerCase() === name.toLowerCase()
-    );
-
-    if (existing) {
-        alert(`${name} already exists in pantry (Qty: ${existing.quantity})`);
-    } else {
-        const li = document.createElement("li");
-        li.innerText = name;
-        shoppingListEl.appendChild(li);
-    }
-
-    scanInput.value = "";
-}
+function logout(){ location.reload(); }
