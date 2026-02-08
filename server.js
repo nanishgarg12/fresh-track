@@ -10,7 +10,8 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ================== MONGODB ==================
-mongoose.connect(
+// IMPORTANT: use environment variable for deployment
+mongoose.connect(process.env.MONGO_URI || 
   'mongodb+srv://nanishgarg18_db_user:nanish@cluster0.igpmk3q.mongodb.net/FreshTrackDB'
 )
 .then(() => console.log('✅ MongoDB connected'))
@@ -30,7 +31,6 @@ const pantrySchema = new mongoose.Schema({
   category: String,
   batchNumber: String,
   quantity: Number,
-  quantityUsed: { type: Number, default: 0 },
   purchaseDate: Date,
   expiryDate: Date
 });
@@ -38,63 +38,120 @@ const PantryItem = mongoose.model('PantryItem', pantrySchema);
 
 // ================== ROUTES ==================
 
-// ROOT FIX
+// ROOT
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// ================== AUTH ==================
+
 // REGISTER
 app.post('/api/register', async (req, res) => {
-  const { username, password, role } = req.body;
-  if (await User.findOne({ username }))
-    return res.status(400).json({ error: "User already exists" });
+  try {
+    const { username, password, role } = req.body;
 
-  const hash = await bcrypt.hash(password, 10);
-  await new User({ username, password: hash, role }).save();
-  res.json({ message: "Registration successful" });
+    if (await User.findOne({ username })) {
+      return res.status(400).json({ error: "User already exists" });
+    }
+
+    const hash = await bcrypt.hash(password, 10);
+    await new User({ username, password: hash, role }).save();
+
+    res.json({ message: "Registration successful" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Registration failed" });
+  }
 });
 
 // LOGIN
 app.post('/api/login', async (req, res) => {
-  const { username, password } = req.body;
-  const user = await User.findOne({ username });
-  if (!user) return res.status(400).json({ error: "User not found" });
+  try {
+    const { username, password } = req.body;
 
-  const ok = await bcrypt.compare(password, user.password);
-  if (!ok) return res.status(400).json({ error: "Wrong password" });
+    const user = await User.findOne({ username });
+    if (!user) return res.status(400).json({ error: "User not found" });
 
-  res.json({ userId: user._id, role: user.role });
+    const ok = await bcrypt.compare(password, user.password);
+    if (!ok) return res.status(400).json({ error: "Wrong password" });
+
+    res.json({ userId: user._id, role: user.role });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Login failed" });
+  }
 });
+
+// ================== PANTRY ==================
 
 // ADD ITEM
 app.post('/api/item', async (req, res) => {
-  await new PantryItem(req.body).save();
-  res.json({ message: "Item added" });
+  try {
+    await new PantryItem(req.body).save();
+    res.json({ message: "Item added" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to add item" });
+  }
 });
 
 // GET ITEMS (FIFO)
 app.get('/api/items/:userId', async (req, res) => {
-  const items = await PantryItem.find({ userId: req.params.userId })
-    .sort({ purchaseDate: 1, expiryDate: 1 });
-  res.json(items);
+  try {
+    const items = await PantryItem.find({ userId: req.params.userId })
+      .sort({ expiryDate: 1, purchaseDate: 1 });
+    res.json(items);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch items" });
+  }
 });
 
-// UPDATE ITEM ✅ REQUIRED
+// ✅ USE ITEM (REDUCE QUANTITY)
+app.put('/api/item/use/:id', async (req, res) => {
+  try {
+    const item = await PantryItem.findById(req.params.id);
+    if (!item) return res.status(404).json({ error: "Item not found" });
+
+    item.quantity -= 1;
+
+    if (item.quantity <= 0) {
+      await item.deleteOne();
+      return res.json({ message: "Item fully used and removed" });
+    }
+
+    await item.save();
+    res.json({ message: "Quantity updated", quantity: item.quantity });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to update quantity" });
+  }
+});
+
+// UPDATE ITEM (MANUAL EDIT)
 app.put('/api/item/:id', async (req, res) => {
-  await PantryItem.findByIdAndUpdate(req.params.id, req.body);
-  res.json({ message: "Item updated" });
+  try {
+    await PantryItem.findByIdAndUpdate(req.params.id, req.body);
+    res.json({ message: "Item updated" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Update failed" });
+  }
 });
 
 // DELETE ITEM
 app.delete('/api/item/:id', async (req, res) => {
-  await PantryItem.findByIdAndDelete(req.params.id);
-  res.json({ message: "Item deleted" });
+  try {
+    await PantryItem.findByIdAndDelete(req.params.id);
+    res.json({ message: "Item deleted" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Delete failed" });
+  }
 });
 
 // ================== START ==================
 const PORT = process.env.PORT || 5000;
-
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
-

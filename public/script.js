@@ -1,56 +1,57 @@
 let currentUserId = null;
 let pantry = [];
+let shoppingList = [];
 
 console.log("✅ Frontend script loaded");
 
 /* ================= AUTH ================= */
 function showRegister() {
-    document.getElementById("loginPage").style.display = "none";
-    document.getElementById("registerPage").style.display = "block";
+    loginPage.style.display = "none";
+    registerPage.style.display = "block";
 }
 
 function showLogin() {
-    document.getElementById("registerPage").style.display = "none";
-    document.getElementById("loginPage").style.display = "block";
+    registerPage.style.display = "none";
+    loginPage.style.display = "block";
 }
 
 async function createUser() {
-    const username = document.getElementById("newUsername").value;
-    const password = document.getElementById("newPassword").value;
-    const role = document.getElementById("role").value;
+    const username = newUsername.value;
+    const password = newPassword.value;
+    const role = roleSelect.value || role.value;
 
-    const res = await fetch('/api/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+    const res = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password, role })
     });
 
     const data = await res.json();
-    document.getElementById("registerMsg").innerText = data.message || data.error;
+    registerMsg.innerText = data.message || data.error;
 }
 
 async function login() {
     const username = document.getElementById("username").value;
     const password = document.getElementById("password").value;
 
-    const res = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+    const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password })
     });
 
     const data = await res.json();
 
     if (data.error) {
-        document.getElementById("loginError").innerText = data.error;
+        loginError.innerText = data.error;
         return;
     }
 
     currentUserId = data.userId;
 
-    document.getElementById("loginPage").style.display = "none";
-    document.getElementById("registerPage").style.display = "none";
-    document.getElementById("app").style.display = "block";
+    loginPage.style.display = "none";
+    registerPage.style.display = "none";
+    app.style.display = "block";
 
     loadItems();
 }
@@ -59,21 +60,21 @@ async function login() {
 async function addItem() {
     const item = {
         userId: currentUserId,
-        name: document.getElementById("itemName").value,
-        category: document.getElementById("category").value,
-        batchNumber: document.getElementById("batchNumber").value,
-        quantity: Number(document.getElementById("quantity").value),
-        purchaseDate: document.getElementById("purchaseDate").value,
-        expiryDate: document.getElementById("expiryDate").value
+        name: itemName.value,
+        category: category.value,
+        batchNumber: batchNumber.value,
+        quantity: Number(quantity.value),
+        purchaseDate: purchaseDate.value,
+        expiryDate: expiryDate.value
     };
 
-    await fetch('/api/item', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+    await fetch("/api/item", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(item)
     });
 
-    document.getElementById("addMsg").innerText = "Item added!";
+    addMsg.innerText = "Item added!";
     loadItems();
 }
 
@@ -81,42 +82,110 @@ async function loadItems() {
     const res = await fetch(`/api/items/${currentUserId}`);
     pantry = await res.json();
     renderDashboard();
+    renderInventory();
+}
+
+/* ================= INVENTORY ================= */
+function renderInventory() {
+    const table = document.getElementById("inventoryTable");
+    if (!table) return;
+
+    table.innerHTML = "";
+
+    pantry.forEach(item => {
+        table.innerHTML += `
+        <tr>
+            <td>${item.name}</td>
+            <td>${item.quantity}</td>
+            <td>${item.expiryDate}</td>
+            <td>
+                <button onclick="useItem('${item._id}')">Use 1</button>
+            </td>
+        </tr>`;
+    });
+}
+
+async function useItem(itemId) {
+    await fetch(`/api/item/use/${itemId}`, {
+        method: "PUT"
+    });
+    loadItems();
 }
 
 /* ================= DASHBOARD ================= */
 function renderDashboard() {
-    // Health Score
-    let healthScore = Math.floor(Math.random() * 20) + 80; // placeholder
-    document.getElementById("healthScore").innerHTML = `${healthScore}% <span class="increase">▲${Math.floor(Math.random()*10)}%</span>`;
-
-    // Total Items
-    document.getElementById("totalItems").innerText = pantry.length;
-
-    // Expiry Alerts
     const now = new Date();
-    const alerts = pantry.filter(item => (new Date(item.expiryDate) - now)/86400000 < 5);
-    document.getElementById("expiryAlert").innerText = alerts.length;
 
-    // Monthly Savings (placeholder)
-    let savings = pantry.length * 50;
-    document.getElementById("monthlySavings").innerText = `₹${savings}`;
+    // Health Score (temporary logic)
+    const healthScore = Math.min(100, 80 + pantry.length);
+    healthScoreEl.innerHTML = `${healthScore}% <span class="increase">▲5%</span>`;
 
-    // Expiry Table
-    const tbody = document.getElementById("expiryTable");
-    tbody.innerHTML = "";
-    pantry.sort((a,b)=> new Date(a.expiryDate)-new Date(b.expiryDate)).forEach(item=>{
-        let daysLeft = Math.ceil((new Date(item.expiryDate)-now)/86400000);
-        let status = daysLeft <= 2 ? "Critical" : daysLeft <= 5 ? "Warning" : "Good";
-        tbody.innerHTML += `<tr>
-            <td>${item.name}</td>
-            <td>${daysLeft} Days</td>
-            <td>${status}</td>
-            <td><button onclick="alert('Find Recipe for ${item.name}')">Find Recipe</button></td>
-        </tr>`;
+    totalItems.innerText = pantry.length;
+
+    const alerts = pantry.filter(
+        i => (new Date(i.expiryDate) - now) / 86400000 < 5
+    );
+    expiryAlert.innerText = alerts.length;
+
+    monthlySavings.innerText = `₹${pantry.length * 50}`;
+
+    expiryTable.innerHTML = "";
+    pantry
+        .sort((a, b) => new Date(a.expiryDate) - new Date(b.expiryDate))
+        .forEach(item => {
+            const daysLeft = Math.ceil(
+                (new Date(item.expiryDate) - now) / 86400000
+            );
+            const status =
+                daysLeft <= 2 ? "Critical" :
+                daysLeft <= 5 ? "Warning" : "Good";
+
+            expiryTable.innerHTML += `
+            <tr>
+                <td>${item.name}</td>
+                <td>${daysLeft} Days</td>
+                <td>${status}</td>
+                <td>
+                    <button onclick="alert('Recipe suggestion for ${item.name}')">
+                        Find Recipe
+                    </button>
+                </td>
+            </tr>`;
+        });
+
+    quickTip.innerText = "Use the oldest stock first (FIFO) to avoid waste!";
+}
+
+/* ================= SHOPPING LIST ================= */
+function scanItem() {
+    const input = document.getElementById("scanInput").value.toLowerCase();
+    if (!input) return;
+
+    document.getElementById("scanInput").value = "";
+
+    const existing = pantry.find(
+        item => item.name.toLowerCase() === input
+    );
+
+    if (existing) {
+        alert(`Item already exists. Quantity: ${existing.quantity}`);
+        return;
+    }
+
+    if (!shoppingList.includes(input)) {
+        shoppingList.push(input);
+        renderShoppingList();
+    }
+}
+
+function renderShoppingList() {
+    const list = document.getElementById("shoppingList");
+    if (!list) return;
+
+    list.innerHTML = "";
+    shoppingList.forEach(item => {
+        list.innerHTML += `<li>${item}</li>`;
     });
-
-    // Quick Tip
-    document.getElementById("quickTip").innerText = "Cook Dal Baati today to use up your oldest Besan & Moong Dal stock!";
 }
 
 /* ================= UI ================= */
@@ -127,7 +196,7 @@ function showPage(id) {
 
 function logout() {
     currentUserId = null;
-    document.getElementById("app").style.display = "none";
+    app.style.display = "none";
     showLogin();
 }
 

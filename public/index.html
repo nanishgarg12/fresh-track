@@ -7,29 +7,27 @@
 </head>
 <body>
 
-<!-- ================= LOGIN PAGE ================= -->
+<!-- ================= LOGIN ================= -->
 <div id="loginPage" class="login-card">
     <h1>FreshTrack</h1>
     <p class="subtitle">Smart Zero-Waste Pantry</p>
 
-    <input type="text" id="username" placeholder="Username">
-    <input type="password" id="password" placeholder="Password">
+    <input id="username" placeholder="Username">
+    <input id="password" type="password" placeholder="Password">
     <button onclick="login()">Login</button>
-
     <p id="loginError" class="error"></p>
 
     <p class="link">
-        Don’t have an account?
-        <span onclick="showRegister()">Create one</span>
+        New user? <span onclick="showRegister()">Create account</span>
     </p>
 </div>
 
-<!-- ================= REGISTER PAGE ================= -->
+<!-- ================= REGISTER ================= -->
 <div id="registerPage" class="login-card" style="display:none;">
     <h1>Create Account</h1>
 
-    <input type="text" id="newUsername" placeholder="Username">
-    <input type="password" id="newPassword" placeholder="Password">
+    <input id="newUsername" placeholder="Username">
+    <input id="newPassword" type="password" placeholder="Password">
 
     <select id="role">
         <option value="single">Single User</option>
@@ -37,91 +35,74 @@
     </select>
 
     <button onclick="createUser()">Register</button>
-
     <p id="registerMsg" class="success"></p>
 
     <p class="link">
-        Already have an account?
-        <span onclick="showLogin()">Login</span>
+        Already registered? <span onclick="showLogin()">Login</span>
     </p>
 </div>
 
-<!-- ================= MAIN APP ================= -->
+<!-- ================= APP ================= -->
 <div id="app" style="display:none;">
+
 <aside class="sidebar">
     <h2>FreshTrack</h2>
-    <nav>
-        <button onclick="showPage('dashboard')">Dashboard</button>
-        <button onclick="showPage('addItem')">Add Item</button>
-        <button onclick="showPage('inventory')">Inventory</button>
-        <button onclick="showPage('recipes')">Recipes</button>
-        <button onclick="showPage('shoppingList')">Shopping List</button>
-        <button onclick="showPage('analytics')">Analytics</button>
-    </nav>
+    <button onclick="showPage('dashboard')">Dashboard</button>
+    <button onclick="showPage('addItem')">Add Item</button>
+    <button onclick="showPage('inventory')">Inventory</button>
+    <button onclick="showPage('shopping')">Shopping List</button>
 </aside>
 
 <main>
-    <!-- DASHBOARD -->
-    <section id="dashboard" class="page">
-        <h2>Namaste, Home Chef! 👋</h2>
-        <p>Your pantry health is looking great today.</p>
 
-        <div class="dashboard-cards">
-            <div class="card">
-                <h3>Pantry Health Score</h3>
-                <p id="healthScore">85% <span class="increase">▲5%</span></p>
-            </div>
-            <div class="card">
-                <h3>Total Items</h3>
-                <p id="totalItems">0</p>
-            </div>
-            <div class="card critical">
-                <h3>Expiry Risk Alert</h3>
-                <p id="expiryAlert">0</p>
-            </div>
-            <div class="card">
-                <h3>Estimated Monthly Savings</h3>
-                <p id="monthlySavings">₹0</p>
-            </div>
-        </div>
+<!-- DASHBOARD -->
+<section id="dashboard" class="page">
+    <h2>Namaste 👋</h2>
+    <p>Total Items: <b id="totalItems">0</b></p>
+</section>
 
-        <h3>Upcoming Expiry (FIFO Alerts)</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Item</th>
-                    <th>Days Left</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody id="expiryTable"></tbody>
-        </table>
+<!-- ADD ITEM -->
+<section id="addItem" class="page" style="display:none;">
+    <h3>Add Pantry / Medicine</h3>
 
-        <div class="quick-tip">
-            <strong>Quick Tip 💡</strong>
-            <p id="quickTip">Use oldest stock first!</p>
-        </div>
-    </section>
+    <input id="itemName" placeholder="Item name">
+    <input id="category" placeholder="Category">
+    <input id="quantity" type="number" placeholder="Quantity">
+    <input id="expiryDate" type="date">
 
-    <!-- ADD ITEM -->
-    <section id="addItem" class="page" style="display:none;">
-        <h3>Add Pantry Item</h3>
-        <div class="form-grid">
-            <input type="text" id="itemName" placeholder="Item name">
-            <input type="text" id="category" placeholder="Category">
-            <input type="text" id="batchNumber" placeholder="Batch number">
-            <input type="number" id="quantity" placeholder="Quantity">
-            <input type="date" id="purchaseDate">
-            <input type="date" id="expiryDate">
-        </div>
-        <button onclick="addItem()">Save Item</button>
-        <p id="addMsg" class="success"></p>
-    </section>
+    <button onclick="addItem()">Save</button>
+    <p id="addMsg" class="success"></p>
+</section>
+
+<!-- INVENTORY -->
+<section id="inventory" class="page" style="display:none;">
+    <h3>Your Inventory</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Qty</th>
+                <th>Expiry</th>
+                <th>Use</th>
+            </tr>
+        </thead>
+        <tbody id="inventoryTable"></tbody>
+    </table>
+</section>
+
+<!-- SHOPPING LIST -->
+<section id="shopping" class="page" style="display:none;">
+    <h3>Shopping List (Scan / Enter)</h3>
+
+    <input id="scanInput" placeholder="Scan or type item name">
+    <button onclick="scanItem()">Add</button>
+
+    <ul id="shoppingList"></ul>
+</section>
+
 </main>
 
-<button class="logout-btn" onclick="logout()">🚪 Logout</button>
-<button class="bot-btn" onclick="openBot()">🤖 Smart Assistant</button>
+<button class="logout-btn" onclick="logout()">Logout</button>
 </div>
 
 <script src="script.js"></script>
