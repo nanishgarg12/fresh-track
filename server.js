@@ -37,10 +37,15 @@ const PantryItem = mongoose.model('PantryItem', new mongoose.Schema({
 
 // ================= EMAIL =================
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false, // use TLS
   auth: {
-    user: 'freshtrack725@gmail.com',   // your gmail
-    pass: 'wtls skkc zxdt dvnu' // replace this
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  },
+  tls: {
+    rejectUnauthorized: false
   }
 });
 
@@ -51,9 +56,7 @@ transporter.verify((err) => {
 
 // ================= EXPIRY CHECK =================
 // Runs every minute (testing)
-cron.schedule('* * * * *', async () => {
-  console.log("🔔 Checking expiry...");
-
+async function checkExpiryAndNotify() {
   try {
     const today = new Date();
     const next3Days = new Date();
@@ -64,30 +67,29 @@ cron.schedule('* * * * *', async () => {
       notified: false
     });
 
-    console.log("Items to notify:", items.length);
-
     for (let item of items) {
       const user = await User.findById(item.userId);
       if (!user) continue;
 
       await transporter.sendMail({
-        from: 'freshtrack725@gmail.com',
+        from: process.env.EMAIL_USER,
         to: user.email,
-        subject: '⚠️ FreshTrack Expiry Alert',
-        text: `Reminder: Your item "${item.name}" will expire on ${item.expiryDate.toDateString()}`
+        subject: "⚠️ FreshTrack Expiry Alert",
+        text: `Reminder: Your item "${item.name}" expires on ${item.expiryDate.toDateString()}`
       });
 
       item.notified = true;
       await item.save();
-
-      console.log("✅ Email sent to:", user.email);
     }
 
   } catch (error) {
-    console.log("❌ Cron error:", error);
+    console.log("❌ Expiry check error:", error);
   }
+}
+app.get("/check-expiry", async (req, res) => {
+  await checkExpiryAndNotify();
+  res.json({ message: "Expiry check completed" });
 });
-
 // ================= SERVER =================
 app.listen(5000, () => {
   console.log("🚀 Server running on http://localhost:5000");
