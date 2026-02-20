@@ -178,21 +178,44 @@ async function login() {
     }
 }
 
+// --- Updated Registration ---
 async function createUser() {
-    const res = await fetch(`${API}/api/register`, {
-        method: "POST",
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            username: newUsername.value,
-            password: newPassword.value,
-            role: role.value
-        })
-    });
-    const data = await res.json();
-    alert(data.message || data.error);
-    if(res.ok) showLogin();
-}
+    const username = document.getElementById("newUsername").value.trim();
+    const email = document.getElementById("newEmail").value.trim();
+    const password = document.getElementById("newPassword").value.trim();
+    const role = document.getElementById("role").value;
 
+    if (!username || !email || !password) {
+        alert("Please fill all fields.");
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API}/api/register`, {
+            method: "POST",
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                username,
+                email,
+                password,
+                role
+            })
+        });
+
+        const data = await res.json();
+        alert(data.message || data.error);
+
+        if (res.ok) {
+            showLogin();
+            document.getElementById("newUsername").value = "";
+            document.getElementById("newEmail").value = "";
+            document.getElementById("newPassword").value = "";
+        }
+
+    } catch (err) {
+        alert("Registration failed. Server error.");
+    }
+}
 // --- Pantry Management (FIFO Logic) ---
 async function loadItems() {
     if (!currentUserId) return;

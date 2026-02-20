@@ -51,17 +51,18 @@
     <p class="switch">New here? <span onclick="showRegister()">Create Account</span></p>
   </div>
 
-  <div id="registerPage" class="auth-card hidden">
-    <h1>Create Account</h1>
-    <input id="newUsername" placeholder="Username">
-    <input id="newPassword" type="password" placeholder="Password">
-    <select id="role">
-      <option value="single">Personal Kitchen</option>
-      <option value="family">Family/Shared Kitchen</option>
-    </select>
-    <button class="btn-primary" onclick="createUser()">Register</button>
-    <p class="switch">Already have an account? <span onclick="showLogin()">Login</span></p>
-  </div>
+ <div id="registerPage" class="auth-card hidden">
+  <h1>Create Account</h1>
+  <input id="newUsername" placeholder="Username">
+  <input id="newEmail" type="email" placeholder="Email" required>
+  <input id="newPassword" type="password" placeholder="Password">
+  <select id="role">
+    <option value="single">Personal Kitchen</option>
+    <option value="family">Family/Shared Kitchen</option>
+  </select>
+  <button class="btn-primary" onclick="createUser()">Register</button>
+  <p class="switch">Already have an account? <span onclick="showLogin()">Login</span></p>
+</div>
 </div>
 
 <div id="app" class="app-layout hidden">
