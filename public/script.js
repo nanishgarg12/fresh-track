@@ -455,3 +455,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+function searchInventory() {
+    const query = document.getElementById('invSearch')?.value.toLowerCase().trim() || '';
+    const rows = document.querySelectorAll('#inventoryTable tr');
+
+    rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        row.style.display = text.includes(query) ? '' : 'none';
+    });
+}
+
