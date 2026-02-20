@@ -2,6 +2,127 @@ const API = window.location.origin;
 let currentUserId = null;
 let pantry = [];
 let shopping = [];
+let notifyWindowDays = 3;
+let browserNotificationsEnabled = false;
+
+function daysUntilExpiry(expiryDate) {
+    const today = new Date();
+    const expiry = new Date(expiryDate);
+    today.setHours(0, 0, 0, 0);
+    expiry.setHours(0, 0, 0, 0);
+    return Math.ceil((expiry - today) / 86400000);
+}
+
+function getExpiringItems(withinDays) {
+    return pantry.filter(item => {
+        const daysLeft = daysUntilExpiry(item.expiryDate);
+        return daysLeft >= 0 && daysLeft <= withinDays;
+    });
+}
+
+function getNotificationStorageKey(itemId, todayKey) {
+    return `freshtrack_notify_${currentUserId}_${itemId}_${todayKey}`;
+}
+
+function updatePermissionLabel() {
+    const permissionEl = document.getElementById("notifyPermission");
+    if (!permissionEl) return;
+
+    if (!("Notification" in window)) {
+        permissionEl.innerText = "This browser does not support notifications.";
+        return;
+    }
+
+    if (Notification.permission === "granted") {
+        permissionEl.innerText = "Browser notifications are enabled.";
+        return;
+    }
+
+    if (Notification.permission === "denied") {
+        permissionEl.innerText = "Notifications are blocked in browser settings.";
+        return;
+    }
+
+    permissionEl.innerText = "Browser notifications are not enabled yet.";
+}
+
+function renderExpiryAlerts() {
+    const alertsList = document.getElementById("expiryAlertsList");
+    if (!alertsList) return;
+
+    const expiringItems = getExpiringItems(notifyWindowDays)
+        .sort((a, b) => new Date(a.expiryDate) - new Date(b.expiryDate));
+
+    if (expiringItems.length === 0) {
+        alertsList.innerHTML = `<li class="expiry-alert-item ok">No items are expiring in the next ${notifyWindowDays} day(s).</li>`;
+        return;
+    }
+
+    alertsList.innerHTML = expiringItems.map(item => {
+        const daysLeft = daysUntilExpiry(item.expiryDate);
+        const urgency = daysLeft === 0 ? "today" : `in ${daysLeft} day(s)`;
+        return `<li class="expiry-alert-item warn"><strong>${item.name}</strong> expires ${urgency}.</li>`;
+    }).join("");
+}
+
+function pushExpiryBrowserNotifications() {
+    if (!browserNotificationsEnabled || !("Notification" in window) || Notification.permission !== "granted") {
+        return;
+    }
+
+    const todayKey = new Date().toISOString().slice(0, 10);
+    const expiringItems = getExpiringItems(notifyWindowDays);
+
+    expiringItems.forEach(item => {
+        const daysLeft = daysUntilExpiry(item.expiryDate);
+        const notificationKey = getNotificationStorageKey(item._id, todayKey);
+        const alreadyNotified = localStorage.getItem(notificationKey);
+        if (alreadyNotified) return;
+
+        const body = daysLeft === 0
+            ? `${item.name} expires today.`
+            : `${item.name} will expire in ${daysLeft} day(s).`;
+
+        new Notification("FreshTrack Expiry Alert", { body });
+        localStorage.setItem(notificationKey, "1");
+    });
+}
+
+function setupNotificationControls() {
+    const notifyDaysInput = document.getElementById("notifyDays");
+    const enableButton = document.getElementById("enableNotifyBtn");
+
+    if (notifyDaysInput) {
+        notifyDaysInput.value = String(notifyWindowDays);
+        notifyDaysInput.addEventListener("change", () => {
+            const nextValue = parseInt(notifyDaysInput.value, 10);
+            notifyWindowDays = Number.isFinite(nextValue) && nextValue > 0 ? Math.min(nextValue, 30) : 3;
+            notifyDaysInput.value = String(notifyWindowDays);
+            renderHome();
+            renderExpiryAlerts();
+            pushExpiryBrowserNotifications();
+        });
+    }
+
+    if (enableButton) {
+        enableButton.addEventListener("click", async () => {
+            if (!("Notification" in window)) {
+                alert("This browser does not support notifications.");
+                return;
+            }
+
+            const permission = await Notification.requestPermission();
+            browserNotificationsEnabled = permission === "granted";
+            updatePermissionLabel();
+            pushExpiryBrowserNotifications();
+        });
+    }
+
+    if ("Notification" in window) {
+        browserNotificationsEnabled = Notification.permission === "granted";
+    }
+    updatePermissionLabel();
+}
 
 // --- Page Navigation ---
 function showRegister() { 
@@ -84,6 +205,8 @@ async function loadItems() {
         
         renderHome();
         renderInventory();
+        renderExpiryAlerts();
+        pushExpiryBrowserNotifications();
     } catch (err) {
         console.error("Error loading pantry:", err);
     }
@@ -121,10 +244,7 @@ async function addItem() {
 
 function renderHome() {
     document.getElementById("totalItems").innerText = pantry.length;
-    const soonCount = pantry.filter(i => {
-        const diff = new Date(i.expiryDate) - Date.now();
-        return diff < (3 * 86400000); // Items expiring within 3 days
-    }).length;
+    const soonCount = getExpiringItems(notifyWindowDays).length;
     document.getElementById("expiryCount").innerText = soonCount;
 }
 
@@ -304,6 +424,7 @@ function logout() { location.reload(); }
 
 // Listen for Enter Key in Chat
 document.addEventListener('DOMContentLoaded', () => {
+    setupNotificationControls();
     const userInp = document.getElementById("userInput");
     if(userInp) {
         userInp.addEventListener("keypress", (e) => {

@@ -207,6 +207,79 @@ nav { display: flex; flex-direction: column; gap: 8px; }
 .stat-card.danger i { color: var(--danger); }
 .stat-card .value { font-size: 1.5rem; font-weight: 800; display: block; }
 
+.notification-panel {
+  background: white;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 1.2rem;
+}
+
+.notification-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.notification-header h3 {
+  margin: 0;
+}
+
+.notification-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+#notifyDays {
+  width: 70px;
+  border: 1px solid #dfe7e5;
+  border-radius: 6px;
+  padding: 6px 8px;
+}
+
+.btn-enable-notify {
+  border: none;
+  background: var(--primary);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.notify-permission {
+  margin: 0.7rem 0;
+  color: #4a5a57;
+  font-size: 0.9rem;
+}
+
+.expiry-alerts-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.expiry-alert-item {
+  border-radius: 8px;
+  padding: 0.7rem 0.8rem;
+  font-size: 0.92rem;
+}
+
+.expiry-alert-item.warn {
+  background: #fff5e8;
+  border: 1px solid #ffd8a8;
+}
+
+.expiry-alert-item.ok {
+  background: #effaf5;
+  border: 1px solid #bde4d0;
+}
+
 /* CAMERA / SCANNER */
 #cameraView {
   width: 100%;

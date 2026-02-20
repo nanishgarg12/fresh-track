@@ -113,6 +113,20 @@
           <div class="data"><span class="label">Waste Prevented</span><span class="value">14.2 kg</span></div>
         </div>
       </div>
+
+      <div class="notification-panel">
+        <div class="notification-header">
+          <h3>Expiry Notifications</h3>
+          <div class="notification-controls">
+            <label for="notifyDays">Notify me before</label>
+            <input id="notifyDays" type="number" min="1" max="30" value="3">
+            <span>days</span>
+            <button id="enableNotifyBtn" type="button" class="btn-enable-notify">Enable Browser Alerts</button>
+          </div>
+        </div>
+        <p id="notifyPermission" class="notify-permission">Browser notifications are not enabled yet.</p>
+        <ul id="expiryAlertsList" class="expiry-alerts-list"></ul>
+      </div>
     </section>
 
     <section id="addItem" class="page hidden">
