@@ -40,7 +40,7 @@ const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: 'freshtrack725@gmail.com',   // your gmail
-    pass: 'PUT_YOUR_16_CHAR_APP_PASSWORD_HERE' // replace this
+    pass: 'wtls skkc zxdt dvnu' // replace this
   }
 });
 
